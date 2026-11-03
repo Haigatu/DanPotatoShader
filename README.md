@@ -12,6 +12,8 @@ A Minecraft Java 1.21.1 shader pack for Intel UHD integrated graphics, built for
 2. In the video settings, open the Iris shader pack screen and use the button to open the shader pack folder. Copy **DanPotatoShader.zip** into it without extracting it. The default Windows launcher uses `%APPDATA%\.minecraft\shaderpacks\`. Prism Launcher uses the selected instance’s folder.
 3. Select **DanPotatoShader.zip** and apply it. **Light** is the default profile. Open **Shader Pack Settings** to switch profiles or adjust individual effects.
 
+Shader settings follow the language selected in Minecraft. English and Russian are available for profile names, menus, options, and tooltips.
+
 ## Profiles
 
 | Setting | Light (default) | Balanced |
@@ -44,7 +46,7 @@ Water reflects the sky gradient only. Ripples change the shading and reflection 
 ## Pack contents
 
 <details>
-<summary>Shader programs, configuration, and English UI strings</summary>
+<summary>Shader programs, configuration, and translations</summary>
 
 Every program listed below includes a vertex shader (`.vsh`) and a fragment shader (`.fsh`).
 
@@ -55,7 +57,7 @@ Every program listed below includes a vertex shader (`.vsh`) and a fragment shad
 | `shaders/` base programs | `final`, `gbuffers_block`, `gbuffers_damagedblock`, `gbuffers_entities`, `gbuffers_hand`, `gbuffers_terrain`, `gbuffers_textured_lit` |
 | `shaders/overworld/` | The same seven program names, plus `gbuffers_skybasic`, `gbuffers_skytextured`, `gbuffers_water`, and `shadow` |
 | `shaders/lib/` | `daylight.glsl`, `sky.glsl`, `settings.glsl`, and the vertex and fragment modules for `scene`, `native`, `unlit`, and `final` |
-| `shaders/lang/` | `en_US.lang` |
+| `shaders/lang/` | `en_US.lang` (English), `ru_RU.lang` (Russian) |
 
 </details>
 
