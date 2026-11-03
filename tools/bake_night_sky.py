@@ -29,4 +29,15 @@ present = rng.random(x.shape) < (0.018 + 0.11*belt)
 brightness = np.where(present,0.22+0.78*rng.random(x.shape)**2,0)
 atlas = np.stack((dust,rng.random(x.shape),rng.random(x.shape),brightness),axis=-1)
 out = Path(__file__).resolve().parents[1] / 'shaders/textures/night-sky.png'
-Image.fromarray(np.rint(np.clip(atlas,0,1)*255).astype('uint8')).save(out,optimize=True)
+pixels = np.rint(np.clip(atlas,0,1)*255).astype('uint8')
+red = pixels[:,:,0]
+padded = np.pad(red,1,mode='edge')
+needs_filter = np.zeros_like(red,dtype=bool)
+for dy in range(3):
+    for dx in range(3):
+        needs_filter |= red != padded[dy:dy+size,dx:dx+size]
+# Alpha 0: constant dust. Alpha 1: filter dust. Higher values are star intensities.
+empty = pixels[:,:,3] == 0
+pixels[empty,1:3] = 0
+pixels[empty & needs_filter,3] = 1
+Image.fromarray(pixels).save(out,optimize=True)

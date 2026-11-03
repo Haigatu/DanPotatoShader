@@ -5,7 +5,10 @@ from PIL import Image
 
 tile = 128
 y,x = (np.indices((tile,tile)) + 0.5) / tile - 0.5
-atlas = np.zeros((3*tile,4*tile,4),dtype='uint8')
+# The middle half of each tile contains the entire visible disk and its filter border.
+margin = tile//4
+stored = tile - 2*margin
+atlas = np.zeros((3*stored,4*stored,4),dtype='uint8')
 for index in range(9):
     sun = index == 8
     px,py = (5.8 if sun else 5.3)*x, (5.8 if sun else 5.3)*y
@@ -29,6 +32,7 @@ for index in range(9):
         color=earth+lit[:,:,None]*(relief[:,:,None]*np.array([.86,.90,.99])-earth)
     data=np.dstack((color*edge[:,:,None],edge))
     row,col=divmod(index,4)
-    atlas[row*tile:(row+1)*tile,col*tile:(col+1)*tile]=np.rint(255*np.clip(data,0,1)).astype('uint8')
+    pixels = np.rint(255*np.clip(data,0,1)).astype('uint8')
+    atlas[row*stored:(row+1)*stored,col*stored:(col+1)*stored] = pixels[margin:-margin,margin:-margin]
 out=Path(__file__).resolve().parents[1]/'shaders/textures/celestial.png'
 Image.fromarray(atlas).save(out,optimize=True)

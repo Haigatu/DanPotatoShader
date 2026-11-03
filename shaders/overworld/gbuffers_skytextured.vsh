@@ -17,8 +17,8 @@ void main() {
     vColor = gl_Color;
 #ifdef ROUND_DISKS
     // The game's moon UVs already select the current phase in a 4 by 2 grid.
-    vDiskUV = renderStage == MC_RENDER_STAGE_MOON ? vUV*vec2(1.0,2.0/3.0)
-             : (vUV+vec2(0.0,2.0))/vec2(4.0,3.0);
+    vDiskUV = renderStage == MC_RENDER_STAGE_MOON ? vUV*vec2(4.0,2.0)
+             : vUV+vec2(0.0,2.0);
 #endif
 #if CLOUD_STYLE > 0
     vec3 viewRay = (gbufferProjectionInverse * vec4(gl_Position.xy, gl_Position.ww)).xyz;

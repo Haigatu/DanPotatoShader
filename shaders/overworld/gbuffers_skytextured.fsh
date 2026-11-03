@@ -20,7 +20,12 @@ layout(location = 0) out vec4 disk;
 void main() {
 #ifdef ROUND_DISKS
     if (renderStage == MC_RENDER_STAGE_SUN || renderStage == MC_RENDER_STAGE_MOON) {
-        disk = texture(celestialAtlas,vDiskUV) * vColor;
+        // Cropped tiles retain the original texels and a transparent filter border.
+        vec2 tile;
+        vec2 offset = modf(vDiskUV, tile) - 0.5;
+        if (max(abs(offset.x), abs(offset.y)) >= 0.25) discard;
+        vec2 uv = (tile + 0.5 + 2.0 * offset) / vec2(4.0, 3.0);
+        disk = textureLod(celestialAtlas, uv, 0.0) * vColor;
     } else
 #endif
     {
