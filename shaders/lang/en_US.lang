@@ -1,0 +1,16 @@
+profile.LIGHT=Light
+profile.BALANCED=Balanced
+screen.SHADOWS=Near shadows
+screen.WATER=Water
+option.CAST_SHADOWS=Cast shadows
+option.CAST_SHADOWS.comment=Draw Overworld opaque terrain and cutouts into a depth map. Switch off for maximum frame rate.
+option.shadowMapResolution=Shadow map size
+option.shadowMapResolution.comment=Side length in pixels. Applies while cast shadows are enabled.
+option.shadowDistance=Shadow radius
+option.shadowDistance.comment=Distance in blocks. A shorter radius concentrates detail and reduces the amount of geometry drawn.
+option.WATER_SKY=Sky reflection
+option.WATER_SKY.comment=Reflect the sky palette on exposed water. The reflection grows stronger at grazing angles.
+option.WATER_RIPPLES=Ripples
+option.WATER_RIPPLES.comment=Two waves vary water brightness and the reflection angle. Fades in the distance.
+option.COPPER_EDGE=Copper edge
+option.COPPER_EDGE.comment=Warm light grazes the upper edge of sunward masonry at dawn and dusk. Fades before the edge becomes subpixel.
