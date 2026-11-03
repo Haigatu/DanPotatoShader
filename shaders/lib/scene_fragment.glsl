@@ -56,10 +56,10 @@ uniform mat4 gbufferProjectionInverse;
 void shadeWater(inout vec4 surface, float visible) {
     float light = dot(vFill + vDirect * visible, vec3(0.28, 0.53, 0.19));
     float detail = dot(surface.rgb, vec3(0.20, 0.55, 0.25));
-    // Retain biome/atlas character, with a stronger clear teal body in daylight.
-    vec3 lagoon = vec3(0.018, 0.34, 0.345) * (0.68 + 0.78 * detail) * light;
-    surface.rgb = mix(surface.rgb, lagoon, 0.72 * vOutdoor);
-    surface.a += (1.0 - surface.a) * 0.15 * vOutdoor;
+    // Blend a muted lake colour with the local biome tint.
+    vec3 lake = vec3(0.030, 0.185, 0.21) * (0.68 + 0.78 * detail) * light;
+    surface.rgb = mix(surface.rgb, lake, 0.76 * vOutdoor);
+    surface.a += (1.0 - surface.a) * 0.36 * vOutdoor;
     vec2 slope = vec2(0.0);
 #ifdef WATER_RIPPLES
     float strength = vWaterTop * (1.0 - smoothstep(26.0, 74.0, vFogDistance));
@@ -74,7 +74,7 @@ void shadeWater(inout vec4 surface, float visible) {
                       / (gbufferProjectionInverse[2][3] * d + gbufferProjectionInverse[3][3]);
         float gap = max(backZ - 1.0 / gl_FragCoord.w, 0.0);
         float deep = gap / (1.8 + gap);
-        surface.rgb = mix(surface.rgb + vec3(0.016, 0.108, 0.058)*light, surface.rgb * vec3(0.48, 0.66, 0.84), deep);
+        surface.rgb = mix(surface.rgb + vec3(0.013, 0.065, 0.045)*light, surface.rgb * vec3(0.48, 0.66, 0.84), deep);
         surface.a = mix(surface.a * 0.55, min(0.91, surface.a + 0.34), deep);
     }
 #endif
@@ -84,7 +84,7 @@ void shadeWater(inout vec4 surface, float visible) {
         vec3 incident = normalize(vWaterView);
         vec3 reflected = reflect(incident, n);
         float grazing = 1.0 - clamp(dot(-incident, n), 0.0, 1.0);
-        float weight = (0.055 + 0.42 * grazing * grazing) * vOutdoor * vWaterTop;
+        float weight = (0.042 + 0.36 * grazing * grazing) * vOutdoor * vWaterTop;
         vec3 flatReflection = reflect(incident, normalize(vWaterNormal));
         // Warp the projected cloud footprint, keeping the horizon stable as waves tilt.
         vec3 footprint = vWaterView + vec3(slope.x, 0.0, slope.y) * (5.0 + 8.0 * grazing);
