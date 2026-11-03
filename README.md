@@ -1,87 +1,72 @@
 # DanPotatoShader
 
-A Minecraft Java 1.21.1 shader pack for Intel UHD integrated graphics, built for Fabric and Iris. At dawn and dusk, a thin copper highlight catches the top edge of sunlit stonework. It runs while the blocks are drawn and needs no extra render pass.
+A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**[Download DanPotatoShader.zip](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.1.0-beta/DanPotatoShader.zip)** · [v0.1.0-beta release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.1.0-beta)
+**[Download DanPotatoShader 0.2.0 beta](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.0-beta/DanPotatoShader-0.2.0-beta.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.0-beta)
 
-**Beta status.** Both profiles compiled and linked on Intel UHD. The effects have been tested on small scenes outside Minecraft. In-game testing and FPS measurements are pending.
+![Light profile in versions 0.1 and 0.2, shown from the same riverbank in afternoon and low sunlight](https://raw.githubusercontent.com/Haigatu/DanPotatoShader/v0.2.0-beta/docs/light-comparison.jpg)
 
-## Installation
+*Offline OpenGL comparison on Intel UHD. Each row uses identical geometry, textures, camera, and lighting inputs. The fixture uses procedural block textures and omits the game's stock cloud mesh. Minecraft gameplay testing for this release is pending.*
 
-1. Use Minecraft Java **1.21.1**, 64-bit **Java 21**, and a compatible **Fabric Loader 0.16.0 or later**. Install the Fabric builds of **Iris 1.8.8** and **Sodium 0.6.13** in your instance’s `mods` folder. [Iris 1.8.8](https://modrinth.com/mod/iris/version/1.8.8%2B1.21.1-fabric) · [Sodium 0.6.13](https://modrinth.com/mod/sodium/version/mc1.21.1-0.6.13-fabric) · [Fabric for 1.21.1](https://fabricmc.net/2024/05/31/121.html).
-2. In the video settings, open the Iris shader pack screen and use the button to open the shader pack folder. Copy **DanPotatoShader.zip** into it without extracting it. The default Windows launcher uses `%APPDATA%\.minecraft\shaderpacks\`. Prism Launcher uses the selected instance’s folder.
-3. Select **DanPotatoShader.zip** and apply it. **Light** is the default profile. Open **Shader Pack Settings** to switch profiles or adjust individual effects.
+## Install
 
-Shader settings follow the language selected in Minecraft. English and Russian are available for profile names, menus, options, and tooltips.
+1. Use **Minecraft Java 1.21.1**, **64-bit Java 21**, and a compatible **Fabric Loader 0.16.0 or later**. Install the Fabric builds of Iris and Sodium for 1.21.1. This pack targets [Iris 1.8.8](https://modrinth.com/mod/iris/version/1.8.8%2B1.21.1-fabric) and [Sodium 0.6.13](https://modrinth.com/mod/sodium/version/mc1.21.1-0.6.13-fabric).
+2. Open the shader pack folder from the Iris video settings and place **DanPotatoShader-0.2.0-beta.zip** inside it. Keep the archive zipped. Prism Launcher has a separate folder for each instance.
+3. Select **DanPotatoShader-0.2.0-beta.zip** and apply. **Light** is the default. Shader settings, profile names, and tooltips follow Minecraft's language and include English and Russian.
 
 ## Profiles
 
-| Setting | Light (default) | Balanced |
+| Setting | Light · default | Balanced |
 | --- | --- | --- |
-| Cast shadows | Off. The shadow pass is skipped. | Nearby terrain and cutout foliage cast shadows |
-| Shadow map and radius | 512 × 512 and 32 blocks if enabled manually | 512 × 512 and 32 blocks |
-| Sky reflection on water | Off | On |
-| Water ripples | Off | On |
-| Copper edge on stonework | On | On |
+| Nearby terrain and foliage shadows | 384 × 384, 24 blocks | 512 × 512, 32 blocks |
+| Cloud layer | Painted sky and its water reflection | Also casts moving shade on sunlit ground |
+| Sky reflection and ripples | On | On |
+| Shoreline depth | Off | One opaque-depth read on visible water |
+| Foliage wind and copper edges | On | On |
 
-**Starting settings for Intel UHD.** For a Core i5-12450H laptop with 16 GB of DDR4, start with **Light**, 1600 × 900, an 8-chunk render distance, a 5-chunk simulation distance, fast clouds, and the default 16× textures. Keep smooth lighting on for shaded corners. If frame pacing is uneven, try 1280 × 720 in the same scene.
+For an i5-12450H with Intel UHD and 16 GB DDR4, start with **Light at 1600 × 900, 8 chunks of render distance, and 5 chunks of simulation distance**. If frame times are uneven, turn off **Cast shadows** first. This skips the extra geometry pass and keeps the painted sky, tinted lighting, and moving water. Try 1280 × 720 if pixel cost is still limiting. All water features switch independently. The **Cloud layer** setting cycles between game clouds, painted clouds, and painted clouds with moving ground shade.
 
-The **Near shadows** menu offers map sizes of **256, 512, or 1024 pixels per side** and radii of **16, 32, or 48 blocks**. For lower-cost cast shadows, try 256 pixels and 16 blocks. A wider radius spreads the same texels over more terrain and makes stepped edges more visible.
+## How it works
 
-## Visual features
+- **Light and leaves.** The vertex shader samples Minecraft's lightmap and separates cool ambient light from direct sunlight. Open sides of leaves and grass transmit some light. Torches retain a warm falloff. Short grass bends from its base, tall plants bend continuously across both blocks, and the shadow pass uses the same displacement as the foliage.
+- **Clouds.** A single 256 × 256 RGBA tile holds cloud density, two lighting slopes, and a smoother density field for rough water. The sky shader projects this tile onto one drifting plane, colors it with the current sun or moon direction, and dims the visible sun, moon, and stars behind it. Balanced samples the same field at terrain vertices for moving patches of shade. The tile occupies 256 KiB as RGBA8. [Cloud-field generator](https://github.com/Haigatu/DanPotatoShader/blob/v0.2.0-beta/tools/bake_cloudfield.py)
+- **Water.** Two moving wave directions shape the reflected light. Fresnel weighting brings out the sky at shallow viewing angles. The reflection samples the smoother cloud field to keep distant highlights stable. Balanced compares the water with the depth of the opaque scene to leave the shore more transparent and tint deeper pools. The reflection contains sky and clouds. Objects on the banks do not appear in it.
+- **Stone and distance.** Low sunlight catches the upper courses of full masonry blocks, with the highlight fading before it becomes subpixel. Distant outdoor terrain picks up the biome's fog color. One final color sample shapes midtone contrast while preserving the black and white endpoints.
 
-- **Light and stonework.** The vanilla lightmap preserves torchlight, caves, and night lighting. In the Overworld, sunlight warms exposed faces while shaded faces stay cool. To see the copper edge, stand beside a stone-brick wall facing the low sun. The highlight follows the top of each course and fades with distance.
-- **Sky and fog.** The biome’s fog color blends into a deeper sky overhead. A warm band appears near the horizon toward the rising or setting sun. The pack keeps Minecraft’s sun, moon, stars, and clouds.
-- **Water.** Light keeps the biome tint, texture animation, and transparency, with a small shift toward turquoise. Balanced adds two animated ripples and a sky reflection that strengthens at shallow viewing angles. Both effects have independent switches and apply only to water.
-- **Color grading.** One sample of the finished scene gently lifts midtones and saturation while preserving black and white.
+The Overworld uses the custom sun, clouds, wind, water, and shadows. The Nether and End keep their own light and fog with the shared final color grade. The pack writes one scene color target, reads no frame history, and uses no volumetric ray marching, SSR, or bloom chain. The optional shadow map covers opaque and cutout terrain. Mobs, translucent blocks, and block entities do not cast into it. Low shadow-map resolutions can show steps on thin silhouettes.
 
-## Rendering and limitations
+## Performance and verification
 
-The pack writes the scene to one color target, `colortex0`. Its only full-screen shader is `final`, which reads the scene once. It uses no history buffers, noise textures, volumetric lighting, ray tracing, or screen-space reflections.
+The GPU measurements below came from the same standalone riverbank scene on **Intel UHD Graphics**, driver **32.0.101.7088**, at **1600 × 900**. The fixture submitted 41,099 quads in the main scene. OpenGL timer queries covered rendering, including enabled shadow, water-depth, and final-color work. Forty samples per configuration were taken after warm-up, rotating the measurement order.
 
-Balanced renders a nearby shadow depth map in the Overworld. Each receiving surface needs at most one hardware-filtered shadow comparison. Shadows fade at the edge of the configured radius. Mobs, the player, block entities, and translucent blocks are excluded as shadow casters. Low resolutions can show stepped edges or a slight offset on thin geometry.
+| Configuration | Median GPU time | 95th percentile |
+| --- | ---: | ---: |
+| 0.1 Light | 1.54 ms | 1.57 ms |
+| 0.2 Light | 2.77 ms | 3.14 ms |
+| 0.2 Light with cast shadows off | 2.36 ms | 2.71 ms |
+| 0.2 Balanced | 3.36 ms | 3.72 ms |
 
-Water reflects the sky gradient only. Ripples change the shading and reflection angle without moving the water mesh. The copper edge applies to the full masonry blocks listed in `shaders/block.properties`. The Nether, End, and other dimensions use the game’s lighting and fog with the shared color grade. The pack has no dedicated Distant Horizons shaders.
+These timings cover this synthetic workload. In-game FPS, frame pacing during chunk loading, and total graphics memory use have not been measured for 0.2.
 
-## Pack contents
+The Iris 1.8.8 parser processed the release ZIP and recognized both profiles, all nine settings, and 25 English and Russian UI entries per language. The OpenGL driver compiled and linked 18 programs across 194 configurations. Both shipping profiles also compiled and linked after Iris's core-profile transformations. Pixel readbacks covered lighting, shadow depth and cutouts, water, material masks, sky colors, fog, and color grading.
 
-<details>
-<summary>Shader programs, configuration, and translations</summary>
+## Files and packaging
 
-Every program listed below includes a vertex shader (`.vsh`) and a fragment shader (`.fsh`).
-
-| Location | Files or programs |
+| Location | Contents |
 | --- | --- |
-| Archive root | `README.md` |
-| `shaders/` | `shaders.properties`, `dimension.properties`, `block.properties` |
-| `shaders/` base programs | `final`, `gbuffers_block`, `gbuffers_damagedblock`, `gbuffers_entities`, `gbuffers_hand`, `gbuffers_terrain`, `gbuffers_textured_lit` |
-| `shaders/overworld/` | The same seven program names, plus `gbuffers_skybasic`, `gbuffers_skytextured`, `gbuffers_water`, and `shadow` |
-| `shaders/lib/` | `daylight.glsl`, `sky.glsl`, `settings.glsl`, and the vertex and fragment modules for `scene`, `native`, `unlit`, and `final` |
-| `shaders/lang/` | `en_US.lang` (English), `ru_RU.lang` (Russian) |
+| `shaders/` | Base programs, profile settings, dimension mapping, and block IDs |
+| `shaders/overworld/` | Terrain, water, sky, entities, hand, shadow, and final program entry points |
+| `shaders/lib/` | Shared lighting, cloud projection, water, foliage wind, fog, and color-grading code |
+| `shaders/textures/` | Packed cloud field and its sampling metadata |
+| `shaders/lang/` | English and Russian menu strings |
+| `tools/`, `docs/` | Offline texture generator and comparison image, excluded from the installable ZIP |
 
-</details>
-
-To build an installable ZIP from a clone, run this command at the repository root.
+To package a clone, run this command at the repository root.
 
 ```sh
-git archive --format=zip --output=DanPotatoShader.zip HEAD README.md shaders
+git archive --format=zip --output=DanPotatoShader-0.2.0-beta.zip HEAD README.md shaders
 ```
-
-## Verification
-
-Offline tests ran on **Intel(R) UHD Graphics**, driver **32.0.101.7088**.
-
-- The Iris 1.8.8 option parser and preprocessor read the ZIP, recognized all six settings and both profiles, and selected Light by default.
-- All 18 programs compiled and linked under OpenGL 3.3 in 18 configurations. These covered both profiles and all 16 combinations of the four switches, including the smallest and largest shadow settings. Both profiles also compiled and linked after Iris transformed their shaders for the core profile.
-- Pixel readbacks checked shadow depth and cutouts, the copper edge and its material mask, ripple animation and sky reflections, the sky gradient, fog, and the final color grade.
-
-Minecraft has not been launched with this pack. In-game appearance, dimension transitions, and mod compatibility still need testing. Gameplay FPS, frame times, and memory use have not been measured.
 
 ## References
 
-The GLSL and settings were written for DanPotatoShader. The following projects informed the implementation.
-
-- Pack structure and program selection follow the [Iris reference](https://shaders.properties/current/reference/overview/), [Iris documentation repository](https://github.com/IrisShaders/docs), and [shaderLABS Base-330](https://github.com/shaderLABS/Base-330).
-- The depth map and receiver bias draw on the [shaderLABS Shadow Tutorial](https://github.com/shaderLABS/Shadow-Tutorial).
-- Independent effect switches and a shadow-free default were informed by [MakeUp Ultra Fast’s profiles](https://github.com/javiergcim/MakeUpUltraFast/blob/master/shaders/shaders.properties) and [developer notes](https://github.com/javiergcim/MakeUpUltraFast/blob/master/ForDevelopers.EN.md).
-- Lighting, atmosphere, and reflection approaches were compared with [Photon](https://github.com/sixthsurge/photon), [Bliss](https://github.com/X0nk/Bliss-Shader), and [Revelation](https://github.com/HaringPro/Revelation).
+The GLSL and cloud texture were created for this pack. Structure and shadow mapping follow the [Iris reference](https://shaders.properties/current/reference/overview/), [Iris documentation repository](https://github.com/IrisShaders/docs), [Base-330](https://github.com/shaderLABS/Base-330), and [Shadow Tutorial](https://github.com/shaderLABS/Shadow-Tutorial). Independent quality controls were informed by [MakeUp Ultra Fast](https://github.com/javiergcim/MakeUpUltraFast) and its [developer notes](https://github.com/javiergcim/MakeUpUltraFast/blob/master/ForDevelopers.EN.md). Additional visual references included [Photon](https://github.com/sixthsurge/photon), [Bliss](https://github.com/X0nk/Bliss-Shader), and [Revelation](https://github.com/HaringPro/Revelation).
