@@ -65,7 +65,7 @@ void shadeWater(inout vec4 surface, float visible) {
     float strength = vWaterTop * (1.0 - smoothstep(26.0, 74.0, vFogDistance));
     vec2 waves = sin(vWavePhase + 0.61 * sin(vWavePhase.yx * vec2(0.50, 0.25)));
     slope = vec2(waves.x * 0.106 - waves.y * 0.045, waves.y * 0.089 + waves.x * 0.057) * strength;
-    surface.rgb *= 1.0 + dot(waves, vec2(0.079, 0.052)) * strength;
+    surface.rgb *= 1.0 + dot(waves, vec2(0.024, 0.016)) * strength;
 #endif
 #ifdef WATER_DEPTH
     if (isEyeInWater == 0 && vWaterTop > 0.0) {
@@ -84,20 +84,20 @@ void shadeWater(inout vec4 surface, float visible) {
         vec3 incident = normalize(vWaterView);
         vec3 reflected = reflect(incident, n);
         float grazing = 1.0 - clamp(dot(-incident, n), 0.0, 1.0);
-        float weight = (0.09 + 0.72 * grazing * grazing) * vOutdoor * vWaterTop;
+        float weight = (0.055 + 0.42 * grazing * grazing) * vOutdoor * vWaterTop;
         vec3 flatReflection = reflect(incident, normalize(vWaterNormal));
         // Warp the projected cloud footprint, keeping the horizon stable as waves tilt.
-        vec3 footprint = vWaterView + vec3(slope.x, 0.0, slope.y) * (12.0 + 17.0 * grazing);
+        vec3 footprint = vWaterView + vec3(slope.x, 0.0, slope.y) * (5.0 + 8.0 * grazing);
         vec3 sky = paintedSky(flatReflection, vWaterSun, vLowSun, footprint, 1.0);
         surface.rgb = mix(surface.rgb, sky, weight);
-        surface.a += (1.0 - surface.a) * weight;
+        surface.a += (1.0 - surface.a) * (0.55 * weight);
         float day = smoothstep(-0.10, 0.12, vWaterSun.y);
         vec3 emitter = day > 0.5 ? vWaterSun : -vWaterSun;
         float s = max(dot(reflected, emitter), 0.0);
         s *= s; s *= s; s *= s;
         float trail = s*s; trail *= trail;
         surface.rgb += mix(vec3(0.20, 0.31, 0.52), vec3(1.0, 0.80, 0.44), day) *
-                       (0.10*s + 0.95*trail*trail) * vOutdoor * visible * (1.0-rainStrength) * vWaterTop;
+                       (0.055*s + 0.46*trail*trail) * vOutdoor * visible * (1.0-rainStrength) * vWaterTop;
     }
 #endif
 }

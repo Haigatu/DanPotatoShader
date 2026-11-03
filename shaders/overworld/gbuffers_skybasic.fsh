@@ -1,5 +1,6 @@
 #version 330 compatibility
 #include "/lib/settings.glsl"
+#define SKY_BACKGROUND
 #include "/lib/sky.glsl"
 uniform int renderStage;
 uniform int isEyeInWater;

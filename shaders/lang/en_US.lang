@@ -23,3 +23,7 @@ option.WATER_DEPTH=Shoreline depth
 option.WATER_DEPTH.comment=Read the opaque depth behind water for clear shallows and darker pools. Switch off to avoid the extra depth read.
 option.FOLIAGE_WIND=Wind in foliage
 option.FOLIAGE_WIND.comment=Leaves stir and grass bends from the base. The same motion is used when drawing nearby shadows.
+option.DETAILED_SKY=Star field
+option.DETAILED_SKY.comment=Add colored pinpoints and a galactic dust lane to the night sky. Switch off to skip both night-atlas reads.
+option.ROUND_DISKS=Round sun and moon
+option.ROUND_DISKS.comment=Draw a round solar disk and a cratered moon with all eight phases. Switch off for the game textures.
