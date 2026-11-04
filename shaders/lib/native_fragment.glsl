@@ -16,15 +16,28 @@ in vec2 vUV;
 in vec2 vLightUV;
 in vec4 vColor;
 in float vFogDistance;
+#if END_TERRAIN == 1 && defined(END_MATERIALS)
+in vec2 vEndAccent;
+#endif
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 scene;
 void main() {
-    scene = texture(gtexture, vUV) * vColor;
+    vec4 albedo = texture(gtexture, vUV);
+    scene = albedo * vColor;
     if (scene.a < alphaTestRef) discard;
 #if APPLY_OVERLAY == 1
     scene.rgb = mix(scene.rgb, entityColor.rgb, entityColor.a);
 #endif
     scene.rgb *= texture(lightmap, vLightUV).rgb;
+#if END_TERRAIN == 1 && defined(END_MATERIALS)
+    if (vEndAccent.x > 0.0) {
+        float sheen = vEndAccent.x * (0.25 + 0.75 * smoothstep(0.02, 0.24, albedo.b));
+        scene.rgb += sheen * vec3(0.105, 0.081, 0.16);
+    } else if (vEndAccent.y > 0.0) {
+        float tip = smoothstep(0.42, 0.82, albedo.g);
+        scene.rgb = mix(scene.rgb, max(scene.rgb, albedo.rgb * vec3(0.96, 0.84, 1.0)), 0.82 * tip);
+    }
+#endif
     float fog = clamp((vFogDistance - fogStart) / max(fogEnd - fogStart, 0.001), 0.0, 1.0);
     fog = fog * fog * (3.0 - 2.0 * fog);
 #if END_HAZE == 1

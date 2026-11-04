@@ -2,13 +2,13 @@
 
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**0.2.8 UHD preview.** Rain gradually fills the gaps between cloud banks. Thunder darkens their undersides and brings a thicker ceiling over the water. In the End, violet pillars of light rise behind the obsidian towers and chorus forests. Cool stars stay fixed above them as the player travels. Switch off **Star field** to use the native End sky.
+**0.2.9 UHD preview.** Lilac light picks out the faces of End islands. Obsidian catches a soft violet highlight at grazing angles, and the pale tips of growing chorus flowers glow. **End island lighting** controls these effects independently of the sky.
 
-**[Download the 0.2.8 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.8-uhd-preview/DanPotatoShader-0.2.8-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.8-uhd-preview)
+**[Download the 0.2.9 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.9-uhd-preview/DanPotatoShader-0.2.9-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.9-uhd-preview)
 
-![Violet pillars and cold stars above the central End island](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.8-uhd-preview/DanPotatoShader-0.2.8-End.png)
+![End island lighting, obsidian and chorus in 0.2.8 and 0.2.9](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.9-uhd-preview/DanPotatoShader-0.2.9-End-comparison.png)
 
-*The central End island in Minecraft 1.21.1, captured at 1920 × 1080 on Intel UHD using the Light profile.*
+*Paired captures from the same positions in Minecraft 1.21.1 on Intel UHD at 1920 × 1080, using the Light profile.*
 
 ## Install
 
@@ -30,6 +30,8 @@ For an i5-12450H with Intel UHD and 16 GB DDR4, start with **Light at your nativ
 
 ## How it works
 
+- **End island lighting.** The terrain vertex shader uses each face's world-space normal to tint ambient light. Its influence fades near bright block lights. Obsidian picks up a grazing highlight masked by the block texture. Growing chorus flowers (ages 0–4) brighten only at their pale tips. Both accents reuse the existing terrain texture sample and are applied before distance fog.
+
 - **Storms.** Iris supplies separate rain and thunder strengths. The pack calculates an overcast amount and a color blend once per frame. The sky, its water reflection and the ground shade in Balanced use the same overcast amount. The existing density texture also darkens the thickest parts of the storm.
 - **End sky.** Two samples of a repeating 256 × 256 field control pillar height, intensity and hue at different distances. The shader calculates the vertical glow for each screen pixel from the viewing ray and the player's altitude. The stars use one unfiltered read of a separate channel in the same field and have their own angular size. The **Star field** setting also controls the End sky. The visual reference was [Complementary Unbound](https://www.curseforge.com/minecraft/shaders/complementary-unbound).
 
@@ -39,7 +41,7 @@ For an i5-12450H with Intel UHD and 16 GB DDR4, start with **Light at your nativ
 - **Night sky and celestial bodies.** A 384 × 384 octahedral star map adds a broken band of galactic light and dust lanes that rotate with the celestial sphere. A tag distinguishes constant dust, filtered dust and star cells. The shader reads a second time only where filtering is needed and evaluates point shapes only for occupied cells. Both fade in rain. The existing star mesh supplies brighter points in cool and warm colors. The sun and all eight moon phases are baked into a cropped 192 KiB atlas. Each sprite reads one texture on the existing game quad. The game selects the phase through its usual lunar texture coordinates. **Star field** switches the 576 KiB night atlas on and off. **Round sun and moon** controls the sprite textures separately. [Night-sky generator](https://github.com/Haigatu/DanPotatoShader/blob/v0.2.2-beta/tools/bake_night_sky.py)
 - **Stone and distance.** Low sunlight catches the upper courses of full masonry blocks, with the highlight fading before it becomes subpixel. Distant outdoor terrain picks up the biome's fog color. One final color sample shapes midtone contrast while preserving the black and white endpoints.
 
-The Overworld uses the custom sun, clouds, wind, water, and shadows. The Nether uses its native light and fog. The End keeps its native lighting and adds violet distance haze when **Star field** is on. All three dimensions use the shared final color grade. The pack writes one scene color target, reads no frame history, and uses no volumetric ray marching, SSR, or bloom chain. The optional shadow map covers opaque and cutout terrain. Mobs, translucent blocks, and block entities do not cast into it. Low shadow-map resolutions can show steps on thin silhouettes.
+The Overworld uses the custom sun, clouds, wind, water, and shadows. The Nether uses its native light and fog. In the End, block faces receive directional light with **End island lighting**. Bright block light retains its native color. **Star field** controls the sky and violet distance haze. All three dimensions use the shared final color grade. The pack writes one scene color target, reads no frame history, and uses no volumetric ray marching, SSR, or bloom chain. The optional shadow map covers opaque and cutout terrain. Mobs, translucent blocks, and block entities do not cast into it. Low shadow-map resolutions can show steps on thin silhouettes.
 
 ## Performance and verification
 
