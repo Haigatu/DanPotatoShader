@@ -59,7 +59,7 @@ vec3 paintedSky(vec3 ray, vec3 sun, float lowSun, vec3 origin, float roughness) 
             // Alpha already stores a wide convolution of coverage. Thresholding it
             // again would turn a soft, distant reflection back into white stripes.
             float filtered = mix(bank.a, 0.48*smoothstep(0.80,0.99,bank.a), cloudClearNight);
-            cover = max(filtered - 1.4*cloudErosion(uv, rainStrength), 0.0)
+            cover = mix(max(filtered - 1.4*cloudErosion(uv, rainStrength), 0.0), 1.0, cloudStorm.x)
                   * (0.18 + 0.48*smoothstep(0.04,0.56,h));
             cloud = mix(shade,ivory,0.52);
         } else {
@@ -72,8 +72,9 @@ vec3 paintedSky(vec3 ray, vec3 sun, float lowSun, vec3 origin, float roughness) 
             cloud = mix(shade,ivory,light);
             cloud += gold*(0.14*halo*clear*day)*(1.0-cover*thickness);
         }
+        vec3 stormShade = fogColor * (vec3(0.76,0.82,0.92) - 0.34*bank.r);
+        cloud = mix(cloud, stormShade, cloudStorm.y);
         cloud = mix(cloud, fogColor, 0.26*(1.0-smoothstep(0.07,0.45,h)));
-        cloud = mix(cloud,fogColor*0.85,rainStrength*0.81);
         sky = mix(sky,cloud,cover*cloudFade);
     }
 #endif

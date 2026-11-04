@@ -2,13 +2,13 @@
 
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**0.2.7 UHD preview.** A clear silver moon has a smooth round disk, a softly lit crescent and eight phases. Moving patches of dry air thin individual cloud banks until gaps open, then clouds can build up again. Clear nights leave wide views of the stars. Both Light and Balanced use the new sky.
+**0.2.8 UHD preview.** Rain gradually fills the gaps between cloud banks. Thunder darkens their undersides and brings a thicker ceiling over the water. In the End, violet pillars of light rise behind the obsidian towers and chorus forests. Cool stars stay fixed above them as the player travels. Switch off **Star field** to use the native End sky.
 
-**[Download the 0.2.7 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.7-uhd-preview/DanPotatoShader-0.2.7-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.7-uhd-preview)
+**[Download the 0.2.8 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.8-uhd-preview/DanPotatoShader-0.2.8-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.8-uhd-preview)
 
-![The same lake in Minecraft with 0.2.2 on the left and Deep Lake on the right](https://raw.githubusercontent.com/Haigatu/DanPotatoShader/v0.2.3-beta/docs/deep-lake.jpg)
+![Violet pillars and cold stars above the central End island](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.8-uhd-preview/DanPotatoShader-0.2.8-End.png)
 
-*Left: 0.2.2 Beta. Right: the Deep Lake water in 0.2.3 Beta. Both frames were captured from the same bank at the same world time on Intel UHD at 1920 × 1080 using the Light profile.*
+*The central End island in Minecraft 1.21.1, captured at 1920 × 1080 on Intel UHD using the Light profile.*
 
 ## Install
 
@@ -30,15 +30,20 @@ For an i5-12450H with Intel UHD and 16 GB DDR4, start with **Light at your nativ
 
 ## How it works
 
+- **Storms.** Iris supplies separate rain and thunder strengths. The pack calculates an overcast amount and a color blend once per frame. The sky, its water reflection and the ground shade in Balanced use the same overcast amount. The existing density texture also darkens the thickest parts of the storm.
+- **End sky.** Two samples of a repeating 256 × 256 field control pillar height, intensity and hue at different distances. The shader calculates the vertical glow for each screen pixel from the viewing ray and the player's altitude. The stars use one unfiltered read of a separate channel in the same field and have their own angular size. The **Star field** setting also controls the End sky. The visual reference was [Complementary Unbound](https://www.curseforge.com/minecraft/shaders/complementary-unbound).
+
 - **Light and leaves.** The vertex shader samples Minecraft's lightmap and separates cool ambient light from direct sunlight. Open sides of leaves and grass transmit some light. Torches retain a warm falloff. Short grass bends from its base, tall plants bend continuously across both blocks, and the shadow pass uses the same displacement as the foliage. In Balanced, moving cloud cover also dims the sunlight that passes through leaves.
 - **Clouds.** A broad bank and finer detail move across a world-space layer at Y=224. Two samples of the same 256 × 256 atlas provide their densities and lighting directions. A separate moving pattern thins the cloud from its edges to its core in dry patches. Rain weakens this effect. The same dry patches open gaps in the sky, its water reflection and the ground shade in Balanced. Clear nights retain the densest cores. Stars and celestial disks use the same cloud mask. Water reads the broad pattern in one filtered sample. The sky layer fades when approached from below and clears overhead above its altitude.
 - **Water.** A muted blue-green tint and lower transparency darken the water while keeping the lakebed visible near shore. The cloud atlas alpha channel stores broad fractional cloud coverage filtered during the texture bake. Water reads it once, blends it into the sky tint and reduces cloud contrast near the horizon. Two moving ripple directions still catch low sunlight. Balanced measures the underwater segment along the viewing ray for clearer shallows and darker pools. The reflection shows sky and clouds.
 - **Night sky and celestial bodies.** A 384 × 384 octahedral star map adds a broken band of galactic light and dust lanes that rotate with the celestial sphere. A tag distinguishes constant dust, filtered dust and star cells. The shader reads a second time only where filtering is needed and evaluates point shapes only for occupied cells. Both fade in rain. The existing star mesh supplies brighter points in cool and warm colors. The sun and all eight moon phases are baked into a cropped 192 KiB atlas. Each sprite reads one texture on the existing game quad. The game selects the phase through its usual lunar texture coordinates. **Star field** switches the 576 KiB night atlas on and off. **Round sun and moon** controls the sprite textures separately. [Night-sky generator](https://github.com/Haigatu/DanPotatoShader/blob/v0.2.2-beta/tools/bake_night_sky.py)
 - **Stone and distance.** Low sunlight catches the upper courses of full masonry blocks, with the highlight fading before it becomes subpixel. Distant outdoor terrain picks up the biome's fog color. One final color sample shapes midtone contrast while preserving the black and white endpoints.
 
-The Overworld uses the custom sun, clouds, wind, water, and shadows. The Nether and End keep their own light and fog with the shared final color grade. The pack writes one scene color target, reads no frame history, and uses no volumetric ray marching, SSR, or bloom chain. The optional shadow map covers opaque and cutout terrain. Mobs, translucent blocks, and block entities do not cast into it. Low shadow-map resolutions can show steps on thin silhouettes.
+The Overworld uses the custom sun, clouds, wind, water, and shadows. The Nether uses its native light and fog. The End keeps its native lighting and adds violet distance haze when **Star field** is on. All three dimensions use the shared final color grade. The pack writes one scene color target, reads no frame history, and uses no volumetric ray marching, SSR, or bloom chain. The optional shadow map covers opaque and cutout terrain. Mobs, translucent blocks, and block entities do not cast into it. Low shadow-map resolutions can show steps on thin silhouettes.
 
 ## Performance and verification
+
+For 0.2.8, the new End sky added 0.39 ms to the median frame time at the central island on Light and 0.43 ms at an outer island on Balanced. The storm at the lake differed by at most 0.01 ms. These comparisons used Intel UHD at 1080p, Fast graphics and 8 render chunks. [Test conditions and timings](https://github.com/Haigatu/DanPotatoShader/blob/v0.2.8-uhd-preview/docs/sky-research-plan.md)
 
 The test client ran **Minecraft 1.21.1, Fabric Loader 0.20.1, Iris 1.8.14-beta.1 and Sodium 0.8.13** on an **i5-12450H with Intel UHD Graphics**, driver **32.0.101.7088**. An isolated single-player lake scene was generated for the comparison. The framebuffer was 1920 × 1080, with 12 chunks of render distance, 5 chunks of simulation distance, and VSync off. Tests used a stationary camera after chunk loading.
 
@@ -54,6 +59,7 @@ For 0.2.2, the Iris 1.8.8 offline parser also checked both profiles, all eleven 
 | --- | --- |
 | `shaders/` | Base programs, profile settings, dimension mapping, and block IDs |
 | `shaders/overworld/` | Terrain, water, sky, entities, hand, shadow, and final program entry points |
+| `shaders/end/` | End sky, distance haze and native material entry points |
 | `shaders/lib/` | Shared lighting, cloud projection, water, foliage wind, fog, and color-grading code |
 | `shaders/textures/` | Cloud and night-sky atlases with sampling metadata |
 | `shaders/lang/` | English and Russian menu strings |

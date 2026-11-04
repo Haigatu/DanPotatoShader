@@ -4,6 +4,11 @@ uniform vec3 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
 uniform float alphaTestRef;
+#if END_HAZE == 1
+uniform float blindness;
+uniform float darknessFactor;
+uniform int isEyeInWater;
+#endif
 #if APPLY_OVERLAY == 1
 uniform vec4 entityColor;
 #endif
@@ -21,5 +26,14 @@ void main() {
 #endif
     scene.rgb *= texture(lightmap, vLightUV).rgb;
     float fog = clamp((vFogDistance - fogStart) / max(fogEnd - fogStart, 0.001), 0.0, 1.0);
-    scene.rgb = mix(scene.rgb, fogColor, fog * fog * (3.0 - 2.0 * fog));
+    fog = fog * fog * (3.0 - 2.0 * fog);
+#if END_HAZE == 1
+    // A violet haze leaves distant End stone and the darker towers distinguishable.
+    // Use the game's fog again while submerged, blinded or affected by Darkness.
+    float visible = isEyeInWater == 0 ? 1.0-max(blindness,darknessFactor) : 0.0;
+    vec3 endFog = mix(scene.rgb, vec3(.17,.125,.22), .62);
+    scene.rgb = mix(scene.rgb, mix(fogColor,endFog,visible), fog);
+#else
+    scene.rgb = mix(scene.rgb, fogColor, fog);
+#endif
 }

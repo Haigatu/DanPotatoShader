@@ -89,7 +89,8 @@ void main() {
     if (direct > 0.01 && worldSun.y > 0.08 && cameraPosition.y + local.y < cloudHeight) {
         vec2 uv = cloudUV(local, worldSun);
         float density = textureLod(noisetex, uv, 0.0).r - cloudErosion(uv, rainStrength);
-        direct *= 1.0 - 0.63 * smoothstep(0.48, 0.70, density) * smoothstep(0.08, 0.24, worldSun.y) * cloudLayerFade(local.y);
+        float cover = mix(smoothstep(0.48, 0.70, density), 1.0, cloudStorm.x);
+        direct *= 1.0 - 0.63 * cover * smoothstep(0.08, 0.24, worldSun.y) * cloudLayerFade(local.y);
     }
 #endif
     float sunFace = max(nl, 0.0);

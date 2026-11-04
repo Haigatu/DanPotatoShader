@@ -3,6 +3,7 @@ uniform sampler2D noisetex;
 uniform vec2 cloudOriginXZ;
 uniform vec2 cloudDetailShift;
 uniform vec2 cloudDryShift;
+uniform vec2 cloudStorm;
 uniform float cloudClearNight;
 
 const float cloudHeight = 224.0;
@@ -33,7 +34,7 @@ float cloudShape(vec2 uv, vec3 ray, vec4 bank, float rain, out vec2 normal) {
     normal = mix(bank.gb, detail.gb, 0.23) * 2.0 - 1.0;
     float low = 0.38 - 0.20 * rain + 0.38 * cloudClearNight;
     float high = 0.60 - 0.18 * rain + 0.32 * cloudClearNight;
-    return smoothstep(low, high, density);
+    return mix(smoothstep(low, high, density), 1.0, cloudStorm.x);
 }
 
 float cloudHorizon(float h) { return smoothstep(0.015, 0.19, h); }
