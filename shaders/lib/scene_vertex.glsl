@@ -1,5 +1,11 @@
 #include "/lib/settings.glsl"
 #include "/lib/daylight.glsl"
+#ifdef HAND_TORCH
+#include "/lib/hand_torch.glsl"
+#endif
+#if PORTAL_PASS == 1 && defined(PORTAL_DEPTH)
+out vec3 vPortalLocal;
+#endif
 
 uniform mat4 gbufferModelViewInverse;
 uniform sampler2D lightmap;
@@ -61,6 +67,9 @@ void main() {
     vec2 lightUV = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
     vTint = gl_Color;
     vec3 local = (gbufferModelViewInverse * view).xyz;
+#if PORTAL_PASS == 1 && defined(PORTAL_DEPTH)
+    vPortalLocal = local;
+#endif
 #if SURFACE_KIND == 1
 #ifdef FOLIAGE_WIND
     int plant = int(mc_Entity.x);
@@ -80,6 +89,9 @@ void main() {
     vec3 cycle = daylight(sun, up);
     float nl = dot(n, sun);
     float sky = smoothstep(0.20, 0.965, lightUV.y);
+#ifdef HAND_TORCH
+    lightUV.x = max(lightUV.x, handTorch(local) * (1.0 - sky * cycle.z));
+#endif
     float torch = smoothstep(0.32, 0.96, lightUV.x);
     vOutdoor = sky * (1.0 - torch);
     float clear = 1.0 - rainStrength * 0.82;

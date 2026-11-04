@@ -1,3 +1,12 @@
+#include "/lib/settings.glsl"
+#ifdef HAND_TORCH
+#include "/lib/hand_torch.glsl"
+#endif
+#if PORTAL_PASS == 1
+#ifdef PORTAL_DEPTH
+out vec3 vPortalLocal;
+#endif
+#endif
 uniform mat4 gbufferModelViewInverse;
 uniform int fogShape;
 out vec2 vUV;
@@ -5,8 +14,10 @@ out vec2 vLightUV;
 out vec4 vColor;
 out float vFogDistance;
 #if END_TERRAIN == 1
+#ifdef END_MATERIALS
 in vec4 mc_Entity;
 out vec2 vEndAccent;
+#endif
 #endif
 void main() {
     vec4 view = gl_ModelViewMatrix * gl_Vertex;
@@ -15,7 +26,13 @@ void main() {
     vLightUV = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
     vColor = gl_Color;
     vec3 local = (gbufferModelViewInverse * view).xyz;
-#if END_TERRAIN == 1
+#ifdef HAND_TORCH
+    vLightUV.x = max(vLightUV.x, handTorch(local));
+#endif
+#if PORTAL_PASS == 1 && defined(PORTAL_DEPTH)
+    vPortalLocal = local;
+#endif
+#if END_TERRAIN == 1 && defined(END_MATERIALS)
     vec3 normal = gl_NormalMatrix * gl_Normal;
     normal *= inversesqrt(max(dot(normal, normal), 0.00001));
     vec3 worldNormal = mat3(gbufferModelViewInverse) * normal;

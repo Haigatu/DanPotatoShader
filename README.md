@@ -2,11 +2,11 @@
 
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**0.2.9 UHD preview.** Lilac light picks out the faces of End islands. Obsidian catches a soft violet highlight at grazing angles, and the pale tips of growing chorus flowers glow. **End island lighting** controls these effects independently of the sky.
+**0.2.10 UHD preview.** Carry a regular torch in either hand to light nearby surfaces. End portals and gateways show two layers of drifting violet dust and cold stars. Both effects have separate switches.
 
-**[Download the 0.2.9 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.9-uhd-preview/DanPotatoShader-0.2.9-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.9-uhd-preview)
+**[Download the 0.2.10 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.10-uhd-preview/DanPotatoShader-0.2.10-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.10-uhd-preview)
 
-![End island lighting, obsidian and chorus in 0.2.8 and 0.2.9](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.9-uhd-preview/DanPotatoShader-0.2.9-End-comparison.png)
+![Handheld torch and the End exit portal in Minecraft](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.10-uhd-preview/DanPotatoShader-0.2.10-comparison.png)
 
 *Paired captures from the same positions in Minecraft 1.21.1 on Intel UHD at 1920 × 1080, using the Light profile.*
 
@@ -29,6 +29,9 @@ A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Inte
 For an i5-12450H with Intel UHD and 16 GB DDR4, start with **Light at your native 1920 × 1080, 8–12 chunks of render distance, and 5 chunks of simulation distance**. If slowdowns appear mostly at night, turn off **Star field** to keep the moon and nearby tree shadows. Turning off **Cast shadows** also saves the extra geometry pass throughout the day. Try 1600 × 900 if reducing pixel cost is necessary. All water features switch independently. The **Cloud layer** setting cycles between game clouds, painted clouds, and painted clouds with moving ground shade.
 
 ## How it works
+
+- **Handheld torch.** A regular torch in either hand raises the block-light coordinate of nearby vertices. The influence fades over ten blocks. Use **Handheld torch** to switch it off if a mod already lights held items.
+- **End portals.** Two filtered samples of a small repeating field produce star and dust layers. Different offsets along the viewing ray give them depth as you move. **End portal depth** affects portal and gateway surfaces.
 
 - **End island lighting.** The terrain vertex shader uses each face's world-space normal to tint ambient light. Its influence fades near bright block lights. Obsidian picks up a grazing highlight masked by the block texture. Growing chorus flowers (ages 0–4) brighten only at their pale tips. Both accents reuse the existing terrain texture sample and are applied before distance fog.
 

@@ -4,6 +4,9 @@ uniform vec3 fogColor;
 uniform float fogStart;
 uniform float fogEnd;
 uniform float alphaTestRef;
+#if PORTAL_PASS == 1 && defined(PORTAL_DEPTH)
+#include "/lib/portal.glsl"
+#endif
 #if END_HAZE == 1
 uniform float blindness;
 uniform float darknessFactor;
@@ -22,6 +25,12 @@ in vec2 vEndAccent;
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 scene;
 void main() {
+#if PORTAL_PASS == 1 && defined(PORTAL_DEPTH)
+    if (blockEntityId == 10102) {
+        scene = vec4(mix(portalColor(), fogColor, smoothstep(fogStart, max(fogEnd, fogStart + 0.001), vFogDistance)), 1.0);
+        return;
+    }
+#endif
     vec4 albedo = texture(gtexture, vUV);
     scene = albedo * vColor;
     if (scene.a < alphaTestRef) discard;

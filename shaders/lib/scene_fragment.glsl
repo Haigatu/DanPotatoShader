@@ -9,6 +9,9 @@ in vec3 vFill;
 in vec3 vDirect;
 in float vFogDistance;
 in float vOutdoor;
+#if PORTAL_PASS == 1 && defined(PORTAL_DEPTH)
+#include "/lib/portal.glsl"
+#endif
 #if SURFACE_KIND == 3
 uniform vec4 entityColor;
 #endif
@@ -118,6 +121,12 @@ void shadeWater(inout vec4 surface, float visible) {
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 scene;
 void main() {
+#if PORTAL_PASS == 1 && defined(PORTAL_DEPTH)
+    if (blockEntityId == 10102) {
+        scene = vec4(mix(portalColor(), fogColor, smoothstep(fogStart, max(fogEnd, fogStart + 0.001), vFogDistance)), 1.0);
+        return;
+    }
+#endif
     vec4 albedo = texture(gtexture, vUV) * vTint;
     if (albedo.a < alphaTestRef) discard;
 #if SURFACE_KIND == 3
