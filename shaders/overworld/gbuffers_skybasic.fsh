@@ -15,8 +15,16 @@ layout(location = 0) out vec4 sky;
 void main() {
     if (renderStage == MC_RENDER_STAGE_STARS || renderStage == MC_RENDER_STAGE_VOID) {
         sky = vColor;
+#if CLOUD_STYLE > 0 || defined(ROUND_DISKS)
+        if (renderStage == MC_RENDER_STAGE_STARS) {
+            vec3 ray = normalize(vRay);
+#ifdef ROUND_DISKS
+            sky.rgb *= starsOutsideMoon(dot(ray, vSun));
+#endif
 #if CLOUD_STYLE > 0
-        if (renderStage == MC_RENDER_STAGE_STARS) sky.rgb *= 1.0 - cloudCover(normalize(vRay), rainStrength);
+            sky.rgb *= 1.0 - cloudCover(ray, rainStrength);
+#endif
+        }
 #endif
     } else if (renderStage == MC_RENDER_STAGE_SUNSET) {
         // The main sky already contains the low-sun belt. Retain a little vanilla glow.

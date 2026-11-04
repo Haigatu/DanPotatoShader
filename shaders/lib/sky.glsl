@@ -9,6 +9,14 @@ uniform float rainStrength;
 #include "/lib/night_sky.glsl"
 #endif
 
+#if defined(SKY_BACKGROUND) && defined(ROUND_DISKS)
+float starsOutsideMoon(float sunDot) {
+    // The baked disk has a tangent radius of 0.05 in every phase.
+    // Its silhouette meets the sky at dot = -1/sqrt(1+0.05^2).
+    return smoothstep(-0.99880, -0.99870, sunDot);
+}
+#endif
+
 vec3 paintedSky(vec3 ray, vec3 sun, float lowSun, vec3 origin, float roughness) {
     float h = clamp(ray.y, 0.0, 1.0);
     float day = smoothstep(-0.14, 0.12, sun.y);
@@ -24,9 +32,18 @@ vec3 paintedSky(vec3 ray, vec3 sun, float lowSun, vec3 origin, float roughness) 
     sky += clear * day * (gold * (0.073 * halo + 0.24 * core * core)
                        + lowSun * belt * mix(vec3(0.16, 0.047, 0.095), vec3(0.44, 0.115, 0.025), solar));
     float lunar = max(-facing, 0.0); lunar *= lunar; lunar *= lunar; lunar *= lunar;
-    sky += vec3(0.055, 0.085, 0.17) * lunar * lunar * (1.0 - day) * clear;
+#ifdef ROUND_DISKS
+    const vec3 moonHalo = vec3(0.045, 0.052, 0.067);
+#else
+    const vec3 moonHalo = vec3(0.055, 0.085, 0.17);
+#endif
+    sky += moonHalo * lunar * lunar * (1.0 - day) * clear;
 #if defined(SKY_BACKGROUND) && defined(DETAILED_SKY)
-    sky += starlight(ray.y);
+    vec3 stars = starlight(ray.y);
+#ifdef ROUND_DISKS
+    stars *= starsOutsideMoon(facing);
+#endif
+    sky += stars;
 #endif
 #if CLOUD_STYLE > 0
     float cloudFade = cloudHorizon(h) * cloudLayerFade(origin.y);
@@ -42,7 +59,8 @@ vec3 paintedSky(vec3 ray, vec3 sun, float lowSun, vec3 origin, float roughness) 
             // Alpha already stores a wide convolution of coverage. Thresholding it
             // again would turn a soft, distant reflection back into white stripes.
             float filtered = mix(bank.a, 0.48*smoothstep(0.80,0.99,bank.a), cloudClearNight);
-            cover = filtered * (0.18 + 0.48*smoothstep(0.04,0.56,h));
+            cover = max(filtered - 1.4*cloudErosion(uv, rainStrength), 0.0)
+                  * (0.18 + 0.48*smoothstep(0.04,0.56,h));
             cloud = mix(shade,ivory,0.52);
         } else {
             vec2 normal;
