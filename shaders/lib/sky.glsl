@@ -29,7 +29,8 @@ vec3 paintedSky(vec3 ray, vec3 sun, float lowSun, vec3 origin, float roughness) 
     sky += starlight(ray.y);
 #endif
 #if CLOUD_STYLE > 0
-    if (ray.y > 0.015) {
+    float cloudFade = cloudHorizon(h) * cloudLayerFade(origin.y);
+    if (cloudFade > 0.0) {
         vec2 uv = cloudUV(origin,ray);
         vec4 bank = texture(noisetex,uv);
         vec3 shade = mix(vec3(0.05,0.067,0.112),vec3(0.51,0.58,0.70),day);
@@ -40,25 +41,22 @@ vec3 paintedSky(vec3 ray, vec3 sun, float lowSun, vec3 origin, float roughness) 
         if (roughness > 0.5) {
             // Alpha already stores a wide convolution of coverage. Thresholding it
             // again would turn a soft, distant reflection back into white stripes.
-            cover = bank.a * (0.18 + 0.48*smoothstep(0.04,0.56,h));
+            float filtered = mix(bank.a, 0.48*smoothstep(0.80,0.99,bank.a), cloudClearNight);
+            cover = filtered * (0.18 + 0.48*smoothstep(0.04,0.56,h));
             cloud = mix(shade,ivory,0.52);
         } else {
-            vec4 crown = texture(noisetex,uv+crownOffset(ray));
-            float lower = cloudMask(bank.r,rainStrength);
-            float upper = cloudMask(crown.r-0.13,rainStrength);
-            float front = lower / max(lower+(1.0-lower)*upper,0.001);
-            vec2 normal = mix(crown.gb,bank.gb,front)*2.0-1.0;
+            vec2 normal;
+            cover = cloudShape(uv,ray,bank,rainStrength,normal);
             vec3 emitter = mix(-sun,sun,day);
             float light = clamp(0.68+0.50*dot(normal,emitter.xz)+0.28*emitter.y,0.0,1.0);
             float thickness = smoothstep(0.51,0.88,bank.r);
-            light = clamp(light - front*(0.14 + 0.24*thickness) + (bank.r-0.62)*0.32*front, 0.0, 1.0);
+            light = clamp(light - cover*(0.14 + 0.24*thickness) + (bank.r-0.62)*0.32*cover, 0.0, 1.0);
             cloud = mix(shade,ivory,light);
-            cloud += gold*(0.14*halo*clear*day)*(1.0-front*thickness);
-            cover = lower+(1.0-lower)*upper;
+            cloud += gold*(0.14*halo*clear*day)*(1.0-cover*thickness);
         }
         cloud = mix(cloud, fogColor, 0.26*(1.0-smoothstep(0.07,0.45,h)));
         cloud = mix(cloud,fogColor*0.85,rainStrength*0.81);
-        sky = mix(sky,cloud,cover*cloudHorizon(h));
+        sky = mix(sky,cloud,cover*cloudFade);
     }
 #endif
     return mix(fogColor, sky, smoothstep(-0.025, 0.06, ray.y));

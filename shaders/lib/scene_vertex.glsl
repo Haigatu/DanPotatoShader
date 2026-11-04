@@ -86,9 +86,9 @@ void main() {
     float direct = smoothstep(0.65, 0.965, lightUV.y) * (1.0 - torch) * cycle.z * clear;
     vec3 worldSun = mat3(gbufferModelViewInverse) * sun;
 #if CLOUD_STYLE == 2
-    if (direct > 0.01 && worldSun.y > 0.08) {
+    if (direct > 0.01 && worldSun.y > 0.08 && cameraPosition.y + local.y < cloudHeight) {
         float density = textureLod(noisetex, cloudUV(local, worldSun), 0.0).r;
-        direct *= 1.0 - 0.63 * smoothstep(0.48, 0.70, density) * smoothstep(0.08, 0.24, worldSun.y);
+        direct *= 1.0 - 0.63 * smoothstep(0.48, 0.70, density) * smoothstep(0.08, 0.24, worldSun.y) * cloudLayerFade(local.y);
     }
 #endif
     float sunFace = max(nl, 0.0);
