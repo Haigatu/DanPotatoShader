@@ -1,10 +1,21 @@
 #version 330 compatibility
 #include "/lib/settings.glsl"
+#if defined(DETAILED_SKY) || defined(END_MIST)
+in vec3 vRay;
+#endif
+#ifdef END_MIST
+uniform vec3 cameraPosition;
+uniform mat4 gbufferModelViewInverse;
+uniform float far;
+uniform float blindness;
+uniform float darknessFactor;
+uniform int isEyeInWater;
+#include "/lib/end_mist.glsl"
+#endif
 #ifdef DETAILED_SKY
 #include "/lib/atlas_uv.glsl"
 uniform sampler2D endGlowField;
 uniform vec3 endGlowOrigin;
-in vec3 vRay;
 
 float pillar(vec3 field, float elevation) {
     float height = .13 + .26*field.g + .10*field.r;
@@ -33,8 +44,10 @@ in vec4 vColor;
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 sky;
 void main() {
-#ifdef DETAILED_SKY
+#if defined(DETAILED_SKY) || defined(END_MIST)
     vec3 ray = normalize(vRay);
+#endif
+#ifdef DETAILED_SKY
     float invHorizontal = inversesqrt(max(dot(ray.xz,ray.xz),.0001));
     vec2 bearing = ray.xz*invHorizontal;
     float slope = ray.y*invHorizontal;
@@ -49,5 +62,10 @@ void main() {
     sky = vec4(space,1.0);
 #else
     sky = texture(gtexture,vUV)*vColor;
+#endif
+#ifdef END_MIST
+    float visible = isEyeInWater == 0 ? 1.0 - max(blindness, darknessFactor) : 0.0;
+    float mist = endMist(ray * min(far, 256.0), cameraPosition.y + gbufferModelViewInverse[3].y);
+    sky.rgb = mix(sky.rgb, endMistColor, mist * visible);
 #endif
 }

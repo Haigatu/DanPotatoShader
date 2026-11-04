@@ -2,11 +2,11 @@
 
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**0.2.10 UHD preview.** Carry a regular torch in either hand to light nearby surfaces. End portals and gateways show two layers of drifting violet dust and cold stars. Both effects have separate switches.
+**0.2.11 UHD preview.** End crystal cores and healing beams brighten above a violet mist between the islands. Exposed stone darkens in rain and dries gradually; thin moving foam follows shallow shorelines. All four effects have separate switches.
 
-**[Download the 0.2.10 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.10-uhd-preview/DanPotatoShader-0.2.10-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.10-uhd-preview)
+**[Download the 0.2.11 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.11-uhd-preview/DanPotatoShader-0.2.11-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.11-uhd-preview)
 
-![Handheld torch and the End exit portal in Minecraft](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.10-uhd-preview/DanPotatoShader-0.2.10-comparison.png)
+![End crystals, island mist, wet stone and shore foam in Minecraft](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.11-uhd-preview/DanPotatoShader-0.2.11-comparison.png)
 
 *Paired captures from the same positions in Minecraft 1.21.1 on Intel UHD at 1920 × 1080, using the Light profile.*
 
@@ -23,13 +23,19 @@ A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Inte
 | Nearby terrain and foliage shadows | 384 × 384, 24 blocks | 512 × 512, 32 blocks |
 | Cloud layer | Painted sky and its water reflection | Also casts moving shade on sunlit ground |
 | Sky reflection and ripples | On | On |
-| Shoreline depth | Off | One opaque-depth read on visible water |
+| Shoreline depth tint | Off | On |
+| Shore foam | One opaque-depth read on visible water | Shares the depth read with shoreline tint |
+| Wet stone, End mist and crystal light | On | On |
 | Foliage wind, copper edges, star field and round disks | On | On |
 
 For an i5-12450H with Intel UHD and 16 GB DDR4, start with **Light at your native 1920 × 1080, 8–12 chunks of render distance, and 5 chunks of simulation distance**. If slowdowns appear mostly at night, turn off **Star field** to keep the moon and nearby tree shadows. Turning off **Cast shadows** also saves the extra geometry pass throughout the day. Try 1600 × 900 if reducing pixel cost is necessary. All water features switch independently. The **Cloud layer** setting cycles between game clouds, painted clouds, and painted clouds with moving ground shade.
 
 ## How it works
 
+- **Crystals and healing beams.** Crystal cores brighten inside their original glass shells. Iris's separate `end_crystal_beam` ID selects the violet healing beam, whose brightness moves along its length. The original entity texture supplies the detail. The core UV mask expects the standard crystal layout, including scaled resource packs.
+- **Mist between End islands.** A triangular density layer fades above and below the island height. Its integral is evaluated directly along the viewing segment, at vertices for geometry and at pixels for the sky. Nearby blocks stay clear. The effect fades under Blindness, Darkness and immersion, and has an independent switch.
+- **Wet stone.** Exposed full masonry blocks darken and pick up a restrained grazing sheen. A smoothed rain value accumulates and dries once per frame. Biome precipitation gates the effect, while the existing skylight coordinates approximate shelter. Materials reuse the original texture sample.
+- **Shore foam.** A narrow moving band follows contact between top water surfaces and opaque terrain. It uses the same depth sample as shoreline tint, reuses ripple motion when available and fades with distance. The effect is intended for visible shallow contacts and skips submerged views and vertical water faces.
 - **Handheld torch.** A regular torch in either hand raises the block-light coordinate of nearby vertices. The influence fades over ten blocks. Use **Handheld torch** to switch it off if a mod already lights held items.
 - **End portals.** Two filtered samples of a small repeating field produce star and dust layers. Different offsets along the viewing ray give them depth as you move. **End portal depth** affects portal and gateway surfaces.
 

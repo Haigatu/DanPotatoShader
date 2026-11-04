@@ -14,8 +14,16 @@ in float vOutdoor;
 #endif
 #if SURFACE_KIND == 3
 uniform vec4 entityColor;
+#if ENTITY_PASS == 1
+#ifdef END_ENERGY
+#include "/lib/end_energy.glsl"
+#endif
+#endif
 #endif
 #if SURFACE_KIND == 1
+#ifdef WET_STONE
+in vec3 vWetStone;
+#endif
 #ifdef COPPER_EDGE
 in vec2 vEdge;
 #endif
@@ -40,10 +48,10 @@ uniform vec3 fogColor;
 #if SURFACE_KIND == 2
 flat in int vWater;
 in float vWaterTop;
-#ifdef WATER_RIPPLES
+#if defined(WATER_RIPPLES) || defined(SHORE_FOAM)
 in vec2 vWavePhase;
 #endif
-#if defined(WATER_SKY) || defined(WATER_DEPTH)
+#if defined(WATER_SKY) || defined(WATER_DEPTH) || defined(SHORE_FOAM)
 uniform int isEyeInWater;
 uniform mat4 gbufferModelViewInverse;
 in vec3 vWaterView;
@@ -53,7 +61,7 @@ in vec3 vWaterNormal;
 flat in vec3 vWaterSun;
 flat in float vLowSun;
 #endif
-#ifdef WATER_DEPTH
+#if defined(WATER_DEPTH) || defined(SHORE_FOAM)
 uniform sampler2D depthtex1;
 uniform mat4 gbufferProjectionInverse;
 #endif
@@ -71,17 +79,19 @@ void shadeWater(inout vec4 surface, float visible) {
     slope = vec2(waves.x * 0.106 - waves.y * 0.045, waves.y * 0.089 + waves.x * 0.057) * strength;
     surface.rgb *= 1.0 + dot(waves, vec2(0.024, 0.016)) * strength;
 #endif
-#if defined(WATER_SKY) || defined(WATER_DEPTH)
+#if defined(WATER_SKY) || defined(WATER_DEPTH) || defined(SHORE_FOAM)
     if (isEyeInWater != 0 || vWaterTop <= 0.0) return;
     // The projected eye moves relative to player space when the camera bobs.
     vec3 eyeRay = vWaterView - gbufferModelViewInverse[3].xyz;
 #endif
-#ifdef WATER_DEPTH
+#if defined(WATER_DEPTH) || defined(SHORE_FOAM)
     float rayLength = length(eyeRay);
     float d = texelFetch(depthtex1, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
     float backZ = -(gbufferProjectionInverse[2][2] * d + gbufferProjectionInverse[3][2])
                   / (gbufferProjectionInverse[2][3] * d + gbufferProjectionInverse[3][3]);
     float gap = max(backZ - 1.0 / gl_FragCoord.w, 0.0) * (rayLength * gl_FragCoord.w);
+#endif
+#ifdef WATER_DEPTH
     float deep = gap / (1.8 + gap);
     surface.rgb = mix(surface.rgb + vec3(0.013, 0.065, 0.045)*light, surface.rgb * vec3(0.48, 0.66, 0.84), deep);
     surface.a = mix(surface.a * 0.55, min(0.91, surface.a + 0.34), deep);
@@ -89,7 +99,7 @@ void shadeWater(inout vec4 surface, float visible) {
 #ifdef WATER_SKY
     if (vOutdoor > 0.005) {
         vec3 n = normalize(vWaterNormal + vec3(slope.x, 0.0, slope.y));
-#ifdef WATER_DEPTH
+#if defined(WATER_DEPTH) || defined(SHORE_FOAM)
         vec3 incident = eyeRay / rayLength;
 #else
         vec3 incident = normalize(eyeRay);
@@ -116,6 +126,18 @@ void shadeWater(inout vec4 surface, float visible) {
         surface.rgb += mix(vec3(0.20, 0.31, 0.52), vec3(1.0, 0.80, 0.44), day) * glint * visible;
     }
 #endif
+#ifdef SHORE_FOAM
+    float nearShore = 1.0 - smoothstep(0.18, 1.15, gap);
+#ifdef WATER_RIPPLES
+    float movement = 0.5 + 0.5 * waves.x;
+#else
+    float movement = 0.5 + 0.5 * sin(vWavePhase.x);
+#endif
+    float foam = nearShore * smoothstep(0.18, 0.70, movement);
+    foam *= vWaterTop * (1.0 - smoothstep(20.0, 52.0, vFogDistance));
+    surface.rgb = mix(surface.rgb, vec3(0.73, 0.82, 0.80) * light, 0.64 * foam);
+    surface.a += (1.0 - surface.a) * 0.62 * foam;
+#endif
 }
 #endif
 /* RENDERTARGETS: 0 */
@@ -137,7 +159,17 @@ void main() {
     if (vDirect.r >= 0.003) visible = visibility();
 #endif
     scene = vec4(albedo.rgb * (vFill + vDirect * visible), albedo.a);
+#if ENTITY_PASS == 1 && defined(END_ENERGY)
+    endEnergy(scene.rgb, albedo, vUV);
+#endif
 #if SURFACE_KIND == 1
+#ifdef WET_STONE
+    float grain = smoothstep(0.10, 0.65, dot(albedo.rgb, vec3(0.28, 0.53, 0.19)));
+    scene.rgb *= 1.0 - 0.24 * vWetStone.x;
+    vec3 sheen = mix(fogColor, vec3(0.48, 0.56, 0.69), 0.35);
+    scene.rgb += vWetStone.x * (0.06 + 0.16 * vWetStone.y) * sheen * (0.55 + 0.45 * grain);
+    scene.rgb += vWetStone.x * vWetStone.z * 0.24 * visible * vFill;
+#endif
 #ifdef COPPER_EDGE
     float span = max(fwidth(vEdge.x), 0.002);
     float stripe = smoothstep(0.90 - span, 0.96 + span, fract(vEdge.x));

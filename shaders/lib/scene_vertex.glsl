@@ -32,6 +32,10 @@ out float vOutdoor;
 in vec4 mc_Entity;
 #endif
 #if SURFACE_KIND == 1
+#ifdef WET_STONE
+uniform float stoneWetness;
+out vec3 vWetStone;
+#endif
 #ifdef COPPER_EDGE
 out vec2 vEdge;
 #endif
@@ -47,7 +51,7 @@ out float vShadowDistance;
 #if SURFACE_KIND == 2
 flat out int vWater;
 out float vWaterTop;
-#if defined(WATER_SKY) || defined(WATER_DEPTH)
+#if defined(WATER_SKY) || defined(WATER_DEPTH) || defined(SHORE_FOAM)
 out vec3 vWaterView;
 #endif
 #ifdef WATER_SKY
@@ -55,7 +59,7 @@ out vec3 vWaterNormal;
 flat out vec3 vWaterSun;
 flat out float vLowSun;
 #endif
-#ifdef WATER_RIPPLES
+#if defined(WATER_RIPPLES) || defined(SHORE_FOAM)
 uniform vec2 motionOriginXZ;
 out vec2 vWavePhase;
 #endif
@@ -122,6 +126,16 @@ void main() {
     vec3 sunlight = mix(vec3(0.81, 0.60, 0.34), vec3(1.06, 0.53, 0.22), cycle.y);
     vDirect = lamp * (sunlight * direct * sunFace + transmission * vec3(0.22, 0.33, 0.07));
 #if SURFACE_KIND == 1
+#ifdef WET_STONE
+    float wet = float(int(mc_Entity.x) == 10002) * stoneWetness * smoothstep(0.90, 0.96, lightUV.y);
+    wet *= 0.15 + 0.85 * max(dot(n, up), 0.0);
+    vec3 viewDirection = normalize(-view.xyz);
+    float grazing = 1.0 - clamp(dot(n, viewDirection), 0.0, 1.0);
+    vec3 emitter = cycle.z > 0.5 ? sun : -sun;
+    float gloss = max(dot(reflect(-viewDirection, n), emitter), 0.0);
+    gloss *= gloss; gloss *= gloss; gloss *= gloss;
+    vWetStone = vec3(wet, grazing * grazing, gloss * gloss * clear);
+#endif
 #ifdef COPPER_EDGE
     float wall = 1.0 - smoothstep(0.14, 0.50, abs(dot(n, up)));
     vEdge = vec2(local.y + fract(cameraPosition.y),
@@ -139,7 +153,7 @@ void main() {
 #if SURFACE_KIND == 2
     vWater = int(mc_Entity.x) == 10001 ? 1 : 0;
     vWaterTop = smoothstep(0.35, 0.85, dot(n, up));
-#if defined(WATER_SKY) || defined(WATER_DEPTH)
+#if defined(WATER_SKY) || defined(WATER_DEPTH) || defined(SHORE_FOAM)
     vWaterView = local;
 #endif
 #ifdef WATER_SKY
@@ -147,7 +161,7 @@ void main() {
     vWaterSun = worldSun;
     vLowSun = cycle.y;
 #endif
-#ifdef WATER_RIPPLES
+#if defined(WATER_RIPPLES) || defined(SHORE_FOAM)
     vec2 p = local.xz + motionOriginXZ;
     // The inner ripple harmonics also repeat: 620 is divisible by 4 and 808 by 2.
     const float hourlyTurn = 6.28318530718 / 3600.0;

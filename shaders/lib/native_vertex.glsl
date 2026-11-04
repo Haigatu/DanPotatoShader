@@ -9,6 +9,11 @@ out vec3 vPortalLocal;
 #endif
 uniform mat4 gbufferModelViewInverse;
 uniform int fogShape;
+#if END_PASS == 1 && defined(END_MIST)
+uniform vec3 cameraPosition;
+out float vEndMist;
+#include "/lib/end_mist.glsl"
+#endif
 out vec2 vUV;
 out vec2 vLightUV;
 out vec4 vColor;
@@ -26,6 +31,10 @@ void main() {
     vLightUV = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
     vColor = gl_Color;
     vec3 local = (gbufferModelViewInverse * view).xyz;
+#if END_PASS == 1 && defined(END_MIST)
+    vec3 eye = gbufferModelViewInverse[3].xyz;
+    vEndMist = endMist(local - eye, cameraPosition.y + eye.y);
+#endif
 #ifdef HAND_TORCH
     vLightUV.x = max(vLightUV.x, handTorch(local));
 #endif
