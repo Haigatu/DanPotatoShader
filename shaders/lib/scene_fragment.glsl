@@ -25,7 +25,7 @@ float visibility() {
     float border = min(min(vShadow.x, 1.0-vShadow.x), min(vShadow.y, 1.0-vShadow.y));
     float weight = smoothstep(0.0, 0.04, border)
                  * (1.0 - smoothstep(0.78 * shadowDistance, shadowDistance, vShadowDistance));
-    if (weight <= 0.0 || vShadow.z <= 0.0 || vShadow.z >= 1.0 || vDirect.r < 0.003) return 1.0;
+    if (weight <= 0.0 || vShadow.z <= 0.0 || vShadow.z >= 1.0) return 1.0;
     return mix(1.0, texture(shadowtex0, vec3(vShadow.xy, vShadow.z - 0.00012)), weight);
 }
 #endif
@@ -42,6 +42,7 @@ in vec2 vWavePhase;
 #endif
 #if defined(WATER_SKY) || defined(WATER_DEPTH)
 uniform int isEyeInWater;
+uniform mat4 gbufferModelViewInverse;
 in vec3 vWaterView;
 #endif
 #ifdef WATER_SKY
@@ -52,7 +53,6 @@ flat in float vLowSun;
 #ifdef WATER_DEPTH
 uniform sampler2D depthtex1;
 uniform mat4 gbufferProjectionInverse;
-uniform mat4 gbufferModelViewInverse;
 #endif
 void shadeWater(inout vec4 surface, float visible) {
     float light = dot(vFill + vDirect * visible, vec3(0.28, 0.53, 0.19));
@@ -70,10 +70,10 @@ void shadeWater(inout vec4 surface, float visible) {
 #endif
 #if defined(WATER_SKY) || defined(WATER_DEPTH)
     if (isEyeInWater != 0 || vWaterTop <= 0.0) return;
+    // The projected eye moves relative to player space when the camera bobs.
+    vec3 eyeRay = vWaterView - gbufferModelViewInverse[3].xyz;
 #endif
 #ifdef WATER_DEPTH
-    // local includes the inverse view translation. Measure from the projected eye.
-    vec3 eyeRay = vWaterView - gbufferModelViewInverse[3].xyz;
     float rayLength = length(eyeRay);
     float d = texelFetch(depthtex1, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
     float backZ = -(gbufferProjectionInverse[2][2] * d + gbufferProjectionInverse[3][2])
@@ -89,7 +89,7 @@ void shadeWater(inout vec4 surface, float visible) {
 #ifdef WATER_DEPTH
         vec3 incident = eyeRay / rayLength;
 #else
-        vec3 incident = normalize(vWaterView);
+        vec3 incident = normalize(eyeRay);
 #endif
         vec3 reflected = reflect(incident, n);
         float grazing = 1.0 - clamp(dot(-incident, n), 0.0, 1.0);
@@ -105,8 +105,12 @@ void shadeWater(inout vec4 surface, float visible) {
         float s = max(dot(reflected, emitter), 0.0);
         s *= s; s *= s; s *= s;
         float trail = s*s; trail *= trail;
-        surface.rgb += mix(vec3(0.20, 0.31, 0.52), vec3(1.0, 0.80, 0.44), day) *
-                       (0.055*s + 0.46*trail*trail) * vOutdoor * visible * (1.0-rainStrength) * vWaterTop;
+        float glint = (0.055*s + 0.46*trail*trail) * vOutdoor * (1.0-rainStrength) * vWaterTop;
+#ifdef CAST_SHADOWS
+        // Daylight already sampled visibility. At night only test a visible glint.
+        if (day < 0.5 && vDirect.r < 0.003 && glint > 0.001) visible = visibility();
+#endif
+        surface.rgb += mix(vec3(0.20, 0.31, 0.52), vec3(1.0, 0.80, 0.44), day) * glint * visible;
     }
 #endif
 }
@@ -121,7 +125,7 @@ void main() {
 #endif
     float visible = 1.0;
 #ifdef CAST_SHADOWS
-    visible = visibility();
+    if (vDirect.r >= 0.003) visible = visibility();
 #endif
     scene = vec4(albedo.rgb * (vFill + vDirect * visible), albedo.a);
 #if SURFACE_KIND == 1

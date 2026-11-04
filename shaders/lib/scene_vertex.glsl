@@ -50,6 +50,7 @@ flat out vec3 vWaterSun;
 flat out float vLowSun;
 #endif
 #ifdef WATER_RIPPLES
+uniform vec2 motionOriginXZ;
 out vec2 vWavePhase;
 #endif
 #endif
@@ -133,9 +134,11 @@ void main() {
     vLowSun = cycle.y;
 #endif
 #ifdef WATER_RIPPLES
-    vec2 p = local.xz + mod(cameraPosition.xz, 256.0);
+    vec2 p = local.xz + motionOriginXZ;
+    // The inner ripple harmonics also repeat: 620 is divisible by 4 and 808 by 2.
+    const float hourlyTurn = 6.28318530718 / 3600.0;
     vWavePhase = 0.09817477 * vec2(dot(p, vec2(8.0, 3.0)), dot(p, vec2(-3.0, 13.0)))
-               + frameTimeCounter * vec2(1.08, -1.41);
+               + frameTimeCounter * (hourlyTurn * vec2(620.0, -808.0));
 #endif
 #endif
 }

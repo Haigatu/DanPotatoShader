@@ -2,7 +2,7 @@
 
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**Local preview: 0.2.4.** The preview adds directional lighting baked into the cloud atlas, continuous cloud drift, and two Balanced changes for shoreline depth and backlit foliage.
+**Local preview: 0.2.5 UHD.** Water reflections follow the projected camera in both profiles. Nearby terrain shadows also occlude the moon glint. Ripples and foliage wind keep their phase across Iris camera-origin shifts and the hourly animation timer reset. This builds on 0.2.4's cloud lighting and Balanced shoreline and foliage changes.
 
 **[Download the published 0.2.3 beta](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.3-beta/DanPotatoShader-0.2.3-beta.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.3-beta)
 
