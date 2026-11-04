@@ -2,9 +2,9 @@
 
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**Local preview 0.2.6 UHD.** Cloud banks travel with the wind and their smaller edges drift independently. Clear nights open wide gaps for the stars and Milky Way, while rain brings back thicker cover. Both Light and Balanced use the new sky. With Game Clouds selected, Minecraft handles the clouds.
+**0.2.6 UHD preview.** Cloud banks travel with the wind and their smaller edges drift independently. Clear nights open wide gaps for the stars and Milky Way, while rain brings back thicker cover. Both Light and Balanced use the new sky. With Game Clouds selected, Minecraft handles the clouds.
 
-**[Download the published 0.2.3 beta](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.3-beta/DanPotatoShader-0.2.3-beta.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.3-beta)
+**[Download the 0.2.6 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.6-uhd-preview/DanPotatoShader-0.2.6-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.6-uhd-preview)
 
 ![The same lake in Minecraft with 0.2.2 on the left and Deep Lake on the right](https://raw.githubusercontent.com/Haigatu/DanPotatoShader/v0.2.3-beta/docs/deep-lake.jpg)
 
