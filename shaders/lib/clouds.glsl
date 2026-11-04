@@ -1,12 +1,12 @@
-// R: cumulus height, GB: outward normal components, A: filtered fractional coverage.
+// R: cumulus density, GB: horizontal open-sky direction, A: filtered coverage.
 uniform sampler2D noisetex;
+uniform vec2 cloudOriginXZ;
 
 vec2 cloudUV(vec3 base, vec3 ray) {
     float rise = max(224.0 - cameraPosition.y - base.y, 24.0);
     float horizon = 1.0 - clamp(ray.y, 0.0, 1.0);
     float elevation = max(ray.y, 0.0) + 0.26 * horizon * horizon;
-    vec2 origin = mod(cameraPosition.xz, 768.0) + base.xz;
-    return (origin + ray.xz * (rise / elevation) + frameTimeCounter * vec2(1.0, -0.35)) / 768.0;
+    return (cloudOriginXZ + base.xz + ray.xz * (rise / elevation)) / 768.0;
 }
 
 float cloudMask(float density, float rain) {

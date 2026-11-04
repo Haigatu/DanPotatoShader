@@ -2,7 +2,9 @@
 
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
-**[Download DanPotatoShader 0.2.3 beta](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.3-beta/DanPotatoShader-0.2.3-beta.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.3-beta)
+**Local preview: 0.2.4.** The preview adds directional lighting baked into the cloud atlas, continuous cloud drift, and two Balanced changes for shoreline depth and backlit foliage.
+
+**[Download the published 0.2.3 beta](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.3-beta/DanPotatoShader-0.2.3-beta.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.3-beta)
 
 ![The same lake in Minecraft with 0.2.2 on the left and Deep Lake on the right](https://raw.githubusercontent.com/Haigatu/DanPotatoShader/v0.2.3-beta/docs/deep-lake.jpg)
 
@@ -11,8 +13,8 @@ A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Inte
 ## Install
 
 1. Use **Minecraft Java 1.21.1**, **64-bit Java 21**, and a compatible **Fabric Loader 0.16.0 or later**. Install the Fabric builds of Iris and Sodium for 1.21.1. The original 0.2 baseline used [Iris 1.8.8](https://modrinth.com/mod/iris/version/1.8.8%2B1.21.1-fabric) and [Sodium 0.6.13](https://modrinth.com/mod/sodium/version/mc1.21.1-0.6.13-fabric).
-2. Open the shader pack folder from the Iris video settings and place **DanPotatoShader-0.2.3-beta.zip** inside it. Keep the archive zipped. Prism Launcher has a separate folder for each instance.
-3. Select **DanPotatoShader-0.2.3-beta.zip** and apply. **Light** is the default. Shader settings, profile names, and tooltips follow Minecraft's language and include English and Russian.
+2. Open the shader pack folder from the Iris video settings and place the downloaded ZIP inside it. Keep the archive zipped. Prism Launcher has a separate folder for each instance.
+3. Select the same ZIP and apply. **Light** is the default. Shader settings, profile names, and tooltips follow Minecraft's language and include English and Russian.
 
 ## Profiles
 
@@ -28,9 +30,9 @@ For an i5-12450H with Intel UHD and 16 GB DDR4, start with **Light at your nativ
 
 ## How it works
 
-- **Light and leaves.** The vertex shader samples Minecraft's lightmap and separates cool ambient light from direct sunlight. Open sides of leaves and grass transmit some light. Torches retain a warm falloff. Short grass bends from its base, tall plants bend continuously across both blocks, and the shadow pass uses the same displacement as the foliage.
-- **Clouds.** A tileable 256 × 256 atlas encodes clusters of rounded lobes, two lighting slopes, and filtered coverage. Two offset sky samples separate illuminated crowns from their lower bank. The view projection bends near the horizon to reduce repeated stripes. Balanced also samples cloud cover at terrain vertices. The atlas takes 256 KiB as RGBA8. [Cloud-field generator](https://github.com/Haigatu/DanPotatoShader/blob/v0.2.2-beta/tools/bake_cloudfield.py)
-- **Water.** A muted blue-green tint and lower transparency darken the water while keeping the lakebed visible near shore. The cloud atlas alpha channel stores broad fractional cloud coverage filtered during the texture bake. Water reads it once, blends it into the sky tint and reduces cloud contrast near the horizon. Two moving ripple directions still catch low sunlight. Balanced additionally uses scene depth for clearer shallows and darker pools. The reflection shows sky and clouds.
+- **Light and leaves.** The vertex shader samples Minecraft's lightmap and separates cool ambient light from direct sunlight. Open sides of leaves and grass transmit some light. Torches retain a warm falloff. Short grass bends from its base, tall plants bend continuously across both blocks, and the shadow pass uses the same displacement as the foliage. In Balanced, moving cloud cover also dims the sunlight that passes through leaves.
+- **Clouds.** A tileable 256 × 256 atlas encodes clusters of rounded lobes, two components of a baked open-sky direction, and filtered coverage. Two offset sky samples separate illuminated crowns from their lower bank. The view projection bends near the horizon to reduce repeated stripes. Balanced also samples cloud cover at terrain vertices. The atlas takes 256 KiB as RGBA8.
+- **Water.** A muted blue-green tint and lower transparency darken the water while keeping the lakebed visible near shore. The cloud atlas alpha channel stores broad fractional cloud coverage filtered during the texture bake. Water reads it once, blends it into the sky tint and reduces cloud contrast near the horizon. Two moving ripple directions still catch low sunlight. Balanced measures the underwater segment along the viewing ray for clearer shallows and darker pools. The reflection shows sky and clouds.
 - **Night sky and celestial bodies.** A 384 × 384 octahedral star map adds a broken band of galactic light and dust lanes that rotate with the celestial sphere. A tag distinguishes constant dust, filtered dust and star cells. The shader reads a second time only where filtering is needed and evaluates point shapes only for occupied cells. Both fade in rain. The existing star mesh supplies brighter points in cool and warm colors. The sun and all eight moon phases are baked into a cropped 192 KiB atlas. Each sprite reads one texture on the existing game quad. The game selects the phase through its usual lunar texture coordinates. **Star field** switches the 576 KiB night atlas on and off. **Round sun and moon** controls the sprite textures separately. [Night-sky generator](https://github.com/Haigatu/DanPotatoShader/blob/v0.2.2-beta/tools/bake_night_sky.py)
 - **Stone and distance.** Low sunlight catches the upper courses of full masonry blocks, with the highlight fading before it becomes subpixel. Distant outdoor terrain picks up the biome's fog color. One final color sample shapes midtone contrast while preserving the black and white endpoints.
 
@@ -60,7 +62,7 @@ For 0.2.2, the Iris 1.8.8 offline parser also checked both profiles, all eleven 
 To package a clone, run this command at the repository root.
 
 ```sh
-git archive --format=zip --output=DanPotatoShader-0.2.3-beta.zip HEAD README.md shaders
+git archive --format=zip --output=DanPotatoShader.zip HEAD README.md shaders
 ```
 
 ## References

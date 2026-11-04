@@ -1,4 +1,4 @@
-"""Bake tileable cumulus lobes, lighting normals, and filtered water coverage."""
+"""Bake tileable cumulus lobes, their open lighting direction, and water coverage."""
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -15,6 +15,24 @@ def noise(n):
     def row(k):
         return grid[k%n, ix%n]*(1-fx) + grid[k%n, (ix+1)%n]*fx
     return row(iy)*(1-fy) + row(iy+1)*fy
+
+
+def open_direction(field, radii, height_scale):
+    """Horizontal moment of the visible sky above a periodic height field."""
+    moment = np.zeros((*field.shape, 2))
+    for angle in np.arange(16) * (2*np.pi / 16):
+        direction = np.array([np.cos(angle), np.sin(angle)])
+        slope = np.zeros_like(field)
+        for radius in radii:
+            sx, sy = np.rint(radius * direction).astype(int)
+            # A negative roll fetches the neighbour in the positive UV direction.
+            ahead = np.roll(field, (-sy, -sx), axis=(0, 1))
+            slope = np.maximum(slope, (ahead-field) * height_scale / np.hypot(sx, sy))
+        # Integral of cos(elevation)^2 up to the horizon, scaled to [0,1].
+        # The open sky points away from the part hidden by taller neighbours.
+        blocked = (2/np.pi) * (np.arctan(slope) + slope/(1+slope*slope))
+        moment -= blocked[:, :, None] * direction
+    return moment / 16
 
 # Groups of touching ellipsoids give the canopy a broken, scalloped outline.
 u, v = x + 0.020*noise(12) + 0.009*noise(29) + 0.002*noise(77), y + 0.020*noise(12) + 0.009*noise(29) + 0.002*noise(77)
@@ -35,12 +53,22 @@ for cx, cy, scale in [(0.12,0.18,1.1),(0.48,0.15,0.78),(0.78,0.32,1.1),
         height = np.maximum(height,lobe) + join*join/0.52
 height += 0.15*noise(24) + 0.085*noise(48) + 0.043*noise(93)
 density = np.clip(0.48 + 0.47*height,0,1)
-dx = np.roll(density,1,1) - np.roll(density,-1,1)
-dy = np.roll(density,1,0) - np.roll(density,-1,0)
 coverage = np.clip((density-0.43)/0.16,0,1)
 freq = np.fft.fftfreq(size)
-kernel = np.exp(-2*np.pi**2*8.5**2*(freq[:,None]**2+freq[None,:]**2))
-soft = np.fft.ifft2(np.fft.fft2(coverage)*kernel).real
-atlas = np.stack((density,0.5+2.4*dx,0.5+2.4*dy,soft),axis=-1)
+freq_squared = freq[:,None]**2 + freq[None,:]**2
+
+def periodic_blur(field, sigma):
+    kernel = np.exp(-2*np.pi**2 * sigma**2 * freq_squared)
+    return np.fft.ifft2(np.fft.fft2(field)*kernel).real
+
+# Resolve nearby lobes and the wider bank separately so small ridges do not
+# hide the open side of the whole bank. Radii and vertical relief are in texels.
+lobes = open_direction(periodic_blur(density, 1.65), (3, 6, 10), 26)
+bank = open_direction(periodic_blur(density, 6.0), (6, 12, 22, 34), 60)
+tilt = 5.5 * (0.48*lobes + 0.52*bank)
+# Project a unit-up vector tilted toward the open sky onto the texture plane.
+normal = tilt / np.sqrt(1.0 + np.sum(tilt*tilt, axis=-1, keepdims=True))
+soft = periodic_blur(coverage, 8.5)
+atlas = np.dstack((density, 0.5 + 0.5*normal, soft))
 out = Path(__file__).resolve().parents[1] / 'shaders/textures/cloudfield.png'
 Image.fromarray(np.rint(np.clip(atlas,0,1)*255).astype('uint8')).save(out,optimize=True)

@@ -41,8 +41,10 @@ out float vShadowDistance;
 #if SURFACE_KIND == 2
 flat out int vWater;
 out float vWaterTop;
-#ifdef WATER_SKY
+#if defined(WATER_SKY) || defined(WATER_DEPTH)
 out vec3 vWaterView;
+#endif
+#ifdef WATER_SKY
 out vec3 vWaterNormal;
 flat out vec3 vWaterSun;
 flat out float vLowSun;
@@ -81,6 +83,13 @@ void main() {
     vOutdoor = sky * (1.0 - torch);
     float clear = 1.0 - rainStrength * 0.82;
     float direct = smoothstep(0.65, 0.965, lightUV.y) * (1.0 - torch) * cycle.z * clear;
+    vec3 worldSun = mat3(gbufferModelViewInverse) * sun;
+#if CLOUD_STYLE == 2
+    if (direct > 0.01 && worldSun.y > 0.08) {
+        float density = textureLod(noisetex, cloudUV(local, worldSun), 0.0).r;
+        direct *= 1.0 - 0.63 * smoothstep(0.48, 0.70, density) * smoothstep(0.08, 0.24, worldSun.y);
+    }
+#endif
     float sunFace = max(nl, 0.0);
     float transmission = 0.0;
 #if SURFACE_KIND == 1
@@ -88,13 +97,6 @@ void main() {
         // Thin leaves transmit some light even on the side facing away from the sun.
         transmission = max(-nl, 0.0) * direct;
         sunFace = 0.21 + 0.79 * sunFace;
-    }
-#endif
-    vec3 worldSun = mat3(gbufferModelViewInverse) * sun;
-#if CLOUD_STYLE == 2
-    if (direct > 0.01 && worldSun.y > 0.08) {
-        float density = textureLod(noisetex, cloudUV(local, worldSun), 0.0).r;
-        direct *= 1.0 - 0.63 * smoothstep(0.48, 0.70, density) * smoothstep(0.08, 0.24, worldSun.y);
     }
 #endif
     vec3 lamp = textureLod(lightmap, lightUV, 0.0).rgb;
@@ -122,8 +124,10 @@ void main() {
 #if SURFACE_KIND == 2
     vWater = int(mc_Entity.x) == 10001 ? 1 : 0;
     vWaterTop = smoothstep(0.35, 0.85, dot(n, up));
-#ifdef WATER_SKY
+#if defined(WATER_SKY) || defined(WATER_DEPTH)
     vWaterView = local;
+#endif
+#ifdef WATER_SKY
     vWaterNormal = mat3(gbufferModelViewInverse) * n;
     vWaterSun = worldSun;
     vLowSun = cycle.y;

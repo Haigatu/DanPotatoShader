@@ -42,9 +42,9 @@ in vec2 vWavePhase;
 #endif
 #if defined(WATER_SKY) || defined(WATER_DEPTH)
 uniform int isEyeInWater;
+in vec3 vWaterView;
 #endif
 #ifdef WATER_SKY
-in vec3 vWaterView;
 in vec3 vWaterNormal;
 flat in vec3 vWaterSun;
 flat in float vLowSun;
@@ -52,6 +52,7 @@ flat in float vLowSun;
 #ifdef WATER_DEPTH
 uniform sampler2D depthtex1;
 uniform mat4 gbufferProjectionInverse;
+uniform mat4 gbufferModelViewInverse;
 #endif
 void shadeWater(inout vec4 surface, float visible) {
     float light = dot(vFill + vDirect * visible, vec3(0.28, 0.53, 0.19));
@@ -67,21 +68,29 @@ void shadeWater(inout vec4 surface, float visible) {
     slope = vec2(waves.x * 0.106 - waves.y * 0.045, waves.y * 0.089 + waves.x * 0.057) * strength;
     surface.rgb *= 1.0 + dot(waves, vec2(0.024, 0.016)) * strength;
 #endif
+#if defined(WATER_SKY) || defined(WATER_DEPTH)
+    if (isEyeInWater != 0 || vWaterTop <= 0.0) return;
+#endif
 #ifdef WATER_DEPTH
-    if (isEyeInWater == 0 && vWaterTop > 0.0) {
-        float d = texelFetch(depthtex1, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
-        float backZ = -(gbufferProjectionInverse[2][2] * d + gbufferProjectionInverse[3][2])
-                      / (gbufferProjectionInverse[2][3] * d + gbufferProjectionInverse[3][3]);
-        float gap = max(backZ - 1.0 / gl_FragCoord.w, 0.0);
-        float deep = gap / (1.8 + gap);
-        surface.rgb = mix(surface.rgb + vec3(0.013, 0.065, 0.045)*light, surface.rgb * vec3(0.48, 0.66, 0.84), deep);
-        surface.a = mix(surface.a * 0.55, min(0.91, surface.a + 0.34), deep);
-    }
+    // local includes the inverse view translation. Measure from the projected eye.
+    vec3 eyeRay = vWaterView - gbufferModelViewInverse[3].xyz;
+    float rayLength = length(eyeRay);
+    float d = texelFetch(depthtex1, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
+    float backZ = -(gbufferProjectionInverse[2][2] * d + gbufferProjectionInverse[3][2])
+                  / (gbufferProjectionInverse[2][3] * d + gbufferProjectionInverse[3][3]);
+    float gap = max(backZ - 1.0 / gl_FragCoord.w, 0.0) * (rayLength * gl_FragCoord.w);
+    float deep = gap / (1.8 + gap);
+    surface.rgb = mix(surface.rgb + vec3(0.013, 0.065, 0.045)*light, surface.rgb * vec3(0.48, 0.66, 0.84), deep);
+    surface.a = mix(surface.a * 0.55, min(0.91, surface.a + 0.34), deep);
 #endif
 #ifdef WATER_SKY
-    if (isEyeInWater == 0 && vWaterTop > 0.0 && vOutdoor > 0.005) {
+    if (vOutdoor > 0.005) {
         vec3 n = normalize(vWaterNormal + vec3(slope.x, 0.0, slope.y));
+#ifdef WATER_DEPTH
+        vec3 incident = eyeRay / rayLength;
+#else
         vec3 incident = normalize(vWaterView);
+#endif
         vec3 reflected = reflect(incident, n);
         float grazing = 1.0 - clamp(dot(-incident, n), 0.0, 1.0);
         float weight = (0.042 + 0.36 * grazing * grazing) * vOutdoor * vWaterTop;
