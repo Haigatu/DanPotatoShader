@@ -1,12 +1,12 @@
 uniform int entityId;
 uniform float endEnergyPhase;
 
-// Iris identifies the healing beam separately from the dragon.
-// The aspect-ratio fallback also handles loaders that retain the crystal's ID.
+// Oculus keeps the crystal/dragon entity ID while drawing its tall beam texture.
+// The square dragon texture and 2:1 crystal atlas must not enter the beam path.
 void endEnergy(inout vec3 color, vec4 albedo, vec2 uv) {
-    if (entityId != 13001 && entityId != 13002) return;
+    if (entityId != 13001 && entityId != 13003) return;
     ivec2 size = textureSize(gtexture, 0);
-    if (entityId == 13002 || size.y >= size.x * 8) {
+    if (size.y >= size.x * 8) {
         float pulse = 0.5 + 0.5 * sin(uv.y * 25.132741 + endEnergyPhase);
         float core = smoothstep(0.12, 0.72, max(albedo.r, albedo.b));
         vec3 energy = mix(vec3(0.32, 0.10, 0.62), vec3(0.91, 0.73, 1.0), core);
