@@ -6,6 +6,8 @@ A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Inte
 
 **[Download the 0.2.11 UHD preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.11-uhd-preview/DanPotatoShader-0.2.11-UHD-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.11-uhd-preview)
 
+**Linggango / Minecraft 1.20.1 / Forge:** [Download the separate 0.2.11 Oculus preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.11-linggango-oculus-preview/DanPotatoShader-0.2.11-Linggango-Oculus-preview.zip) · [Installation and source](https://github.com/Haigatu/DanPotatoShader/tree/linggango-oculus) · [Tests and release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.11-linggango-oculus-preview). Tested in Linggango V6.6.6hf with its bundled Emberlens / Emberbium on Intel UHD. Keep those loader forks and add only the shader ZIP; this edition has its own 1.20.1 material mappings and Oculus compatibility fixes.
+
 ![End crystals, island mist, wet stone and shore foam in Minecraft](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.11-uhd-preview/DanPotatoShader-0.2.11-comparison.png)
 
 *Paired captures from the same positions in Minecraft 1.21.1 on Intel UHD at 1920 × 1080, using the Light profile.*
