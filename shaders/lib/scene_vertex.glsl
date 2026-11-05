@@ -44,6 +44,7 @@ out vec2 vEdge;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 uniform vec3 shadowLightPosition;
+#include "/lib/shadow_grid.glsl"
 out vec3 vShadow;
 out float vShadowDistance;
 #endif
@@ -147,6 +148,7 @@ void main() {
     float incidence = clamp(dot(n, normalize(shadowLightPosition)), 0.0, 1.0);
     vec3 receiver = local + mat3(gbufferModelViewInverse) * n * (0.35 + 0.85 * (1.0 - incidence)) * footprint;
     vec4 lightClip = shadowProjection * shadowModelView * vec4(receiver, 1.0);
+    lightClip.xy += shadowGridOffset(shadowProjection * shadowModelView) * lightClip.w;
     vShadow = lightClip.xyz / lightClip.w * 0.5 + 0.5;
     vShadowDistance = length(local);
 #endif

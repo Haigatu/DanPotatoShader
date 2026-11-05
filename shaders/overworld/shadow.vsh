@@ -1,10 +1,12 @@
 #version 330 compatibility
 #include "/lib/settings.glsl"
+uniform mat4 shadowModelView;
+uniform mat4 shadowProjection;
+#include "/lib/shadow_grid.glsl"
 #ifdef FOLIAGE_WIND
 in vec4 mc_Entity;
 in vec2 mc_midTexCoord;
 uniform mat4 shadowModelViewInverse;
-uniform mat4 shadowModelView;
 #include "/lib/weather_uniforms.glsl"
 #include "/lib/wind.glsl"
 #endif
@@ -20,6 +22,7 @@ void main() {
     }
 #endif
     gl_Position = gl_ProjectionMatrix * view;
+    gl_Position.xy += shadowGridOffset(shadowProjection * shadowModelView) * gl_Position.w;
     vUV = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     vAlpha = gl_Color.a;
 }

@@ -1,19 +1,27 @@
 # DanPotatoShader — Linggango / Oculus
 
-**0.2.11 Linggango Oculus preview**, a separate edition of DanPotatoShader for **Minecraft 1.20.1, Forge and Oculus**, aimed at Intel UHD integrated graphics. It keeps the moving clouds, round moon, End sky, island mist, crystal/beam effects, wet stone and shoreline foam of the 1.21.1 edition.
+**0.2.12 Linggango Oculus preview**, a separate edition of DanPotatoShader for **Minecraft 1.20.1, Forge and Oculus**, aimed at Intel UHD integrated graphics. It keeps the moving clouds, round moon, End sky, island mist, crystal/beam effects, wet stone and shoreline foam of the 1.21.1 edition.
 
-**[Download the Linggango Oculus ZIP](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.11-linggango-oculus-preview/DanPotatoShader-0.2.11-Linggango-Oculus-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.11-linggango-oculus-preview) · [Standard 1.21.1 Iris edition](https://github.com/Haigatu/DanPotatoShader/tree/main)
+**[Download the Linggango Oculus ZIP](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.12-linggango-oculus-preview/DanPotatoShader-0.2.12-Linggango-Oculus-preview.zip)** · [Release notes](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.12-linggango-oculus-preview) · [Standard 1.21.1 Iris edition](https://github.com/Haigatu/DanPotatoShader/tree/main)
 
 ## Install in Linggango
 
 The target is **Linggango V6.6.6hf, Minecraft 1.20.1, Forge 47.4.20, Java 17**, with its bundled **Emberlens 1.8.6** (Oculus fork) and **Emberbium 0.3.32-beta.114** (Embeddium fork).
 
 1. Keep Linggango's bundled **Emberlens and Emberbium**. They already provide shader support; do not add a second Oculus or Embeddium JAR alongside them. OptiFine and Fabric Iris/Sodium are not part of this setup.
-2. Put `DanPotatoShader-0.2.11-Linggango-Oculus-preview.zip` in this instance's `minecraft/shaderpacks` folder. Keep it zipped.
+2. Put `DanPotatoShader-0.2.12-Linggango-Oculus-preview.zip` in this instance's `minecraft/shaderpacks` folder. Keep it zipped.
 3. Select it under Video Settings → Shader Packs. Start with **Light**, Fast graphics, **6–8 render chunks** and **5 simulation chunks**. All shader options have Russian and English labels.
-4. If needed, turn off **Cast shadows / Тени от блоков** first; individual sky, water and material effects also have switches. Lowering resolution to 1600×900 reduces pixel cost. Performance still depends on structures, machines, mobs, resource packs and world generation.
+4. In **Video Settings → General**, set Emberlens **Shadow Update Interval to 1**. Values 2–4 reuse an older shadow map while the camera moves and cause jumping shadows. This loader setting is outside the shader ZIP.
+5. If needed, turn off **Cast shadows / Тени от блоков** first; individual sky, water and material effects also have switches. Lowering resolution to 1600×900 reduces pixel cost. Performance still depends on structures, machines, mobs, resource packs and world generation.
 
 The shader ZIP contains no loader mods. Each Prism instance has its own mods and shaderpacks folders. The pack also passes offline parsing, transformation and Intel compilation using official Oculus 1.8.0, but the full Linggango game test uses its bundled forks.
+
+## Fixes in 0.2.12
+
+- Align the shadow map and its receivers to the same world-anchored texel grid. Crossing the loader's 2-block grid no longer shifts shadow edges by a fractional texel. Integer camera coordinates are split before conversion to float, preserving phase near the world border.
+- Require Emberlens's shadow update interval 1; document it in the shadow option tooltips. Skipping shadow updates is a separate loader issue that a shader ZIP cannot override.
+- Restore native clouds in other dimensions, including Ad Astra Glacio. Only Overworld vanilla cloud geometry is suppressed when painted clouds are selected; Cloud layer 0 preserves the loader's original fallback.
+- Use the water fog color for the End background while submerged, including with island mist disabled.
 
 ## Adaptation
 
@@ -31,7 +39,7 @@ Special material effects target the explicitly listed blocks in `shaders/block.p
 
 This branch is maintained separately from the Fabric/Iris 1.21.1 edition. Measurements and actual validation conditions for this release are recorded in its release notes.
 
-Tested in a separate copy of Linggango with the bundled loader forks on Intel UHD Graphics: 1920×1080, Fast, 8 render / 5 simulation chunks, 8 GB Java heap. A stationary forest scene averaged about 105 FPS in Light and 118 FPS with shadows disabled (medians of three 10-second runs). These are scene measurements, not a minimum-FPS guarantee for busy bases or chunk generation. Shader compilation and focused crystal/dragon pixel checks also passed on the Intel driver; official Oculus 1.8.0 and bundled Emberlens produced identical transformed shader sources.
+Tested in a separate copy of Linggango with the bundled loader forks on Intel UHD Graphics: 1920×1080, Fast, 8 render / 5 simulation chunks, 8 GB Java heap. Validation includes continuous camera movement, negative coordinates/world-border precision, submersion, native dimension clouds, shader option combinations and actual Intel compilation. Current paired performance measurements are in the release notes; they are scene measurements, not a minimum-FPS guarantee for busy bases or chunk generation.
 
 ## References
 

@@ -2,6 +2,8 @@
 #include "/lib/settings.glsl"
 #if defined(DETAILED_SKY) || defined(END_MIST)
 in vec3 vRay;
+uniform int isEyeInWater;
+uniform vec3 fogColor;
 #endif
 #ifdef END_MIST
 uniform vec3 cameraPosition;
@@ -9,7 +11,6 @@ uniform mat4 gbufferModelViewInverse;
 uniform float far;
 uniform float blindness;
 uniform float darknessFactor;
-uniform int isEyeInWater;
 #include "/lib/end_mist.glsl"
 #endif
 #ifdef DETAILED_SKY
@@ -45,6 +46,10 @@ in vec4 vColor;
 layout(location = 0) out vec4 sky;
 void main() {
 #if defined(DETAILED_SKY) || defined(END_MIST)
+    if (isEyeInWater != 0) {
+        sky = vec4(fogColor, 1.0);
+        return;
+    }
     vec3 ray = normalize(vRay);
 #endif
 #ifdef DETAILED_SKY
