@@ -1,5 +1,55 @@
 # DanPotatoShader
 
+## ATM 10 edition — 0.2.13 preview
+
+**[Download the ATM 10 preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.13-atm10-preview/DanPotatoShader-0.2.13-ATM10-preview.zip)**
+
+Prepared against an installed **All the Mods 10 8.2** instance: Minecraft 1.21.1,
+NeoForge 21.1.251, Iris 1.8.14-beta.1 and Sodium 0.8.13. Use the instance's
+NeoForge shader loader; the Fabric installation instructions below describe
+the original edition, not ATM 10. Keep the pack's existing mods.
+
+Put this ZIP in the instance's `minecraft/shaderpacks` folder, select it in
+Iris's shader menu and enable shaders. Start with **Light**. The ZIP is a shader
+pack, not a mod; do not extract it or put it in `mods`.
+
+- Modded leaves tagged `minecraft:leaves` receive the existing foliage wind and
+  transmission in the Overworld. Terrain and shadow passes use the same ID.
+  Older Iris without tag support retains the original vanilla leaf mapping.
+- Custom cloud styles suppress game cloud geometry only in the Overworld.
+  Other dimensions retain their clouds, subject to the game's cloud setting.
+  Selecting game clouds (`CLOUD_STYLE=0`) restores game clouds in the Overworld.
+- Unlisted dimensions keep the existing native-light/fog root programs. The
+  Aether, Twilight Forest, mining dimensions and space are not forced to use
+  the Overworld's sun, water reflection or End haze. Special mod renderers still
+  require an in-game check. Water effects remain restricted to vanilla water;
+  machines and other fluids are not classified as foliage or water.
+
+Validation on Intel UHD driver 32.0.101.7088: **140 direct OpenGL compile/link
+configurations**, with Light, Balanced, game clouds, shadows off and all effects
+off. Pixel checks cover native clouds and Overworld cloud suppression/restoration.
+The installed mod archives contribute 529 leaf IDs through leaf tag declarations.
+These are offline checks: **ATM 10 gameplay, Iris transformations, Create/Colorwheel,
+Mekanism renderers, dimension transitions and FPS have not been tested**. This is
+a prerelease, not a claim of compatibility with every ATM mod. The Fabric
+benchmarks below are historical results for the original pack.
+
+### Установка в ATM 10
+
+Скопируйте ZIP в `minecraft/shaderpacks` своей сборки Prism Launcher, затем
+выберите **DanPotatoShader-0.2.13-ATM10-preview.zip** в меню шейдеров Iris и
+включите шейдеры. Начните с профиля **Light**. Распаковывать архив и менять
+моды сборки не нужно. При установленном моде динамического света можно
+отключить опцию «Handheld torch» в настройках шейдера.
+
+Перед обычной игрой проверьте воду и модовые деревья, механизмы Create,
+экипировку Mekanism и переходы в используемые измерения. Проверки компиляции
+пройдены; визуальная проверка в ATM 10 ещё не выполнена.
+
+---
+
+## Original Fabric edition
+
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
 **0.2.11 UHD preview.** End crystal cores and healing beams brighten above a violet mist between the islands. Exposed stone darkens in rain and dries gradually; thin moving foam follows shallow shorelines. All four effects have separate switches.
