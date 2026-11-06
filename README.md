@@ -1,5 +1,7 @@
 # DanPotatoShader
 
+**All the Mods 10 / Minecraft 1.21.1 / NeoForge:** [Download the separate 0.2.13 ATM 10 preview](https://github.com/Haigatu/DanPotatoShader/releases/download/v0.2.13-atm10-preview/DanPotatoShader-0.2.13-ATM10-preview.zip) · [Installation and source](https://github.com/Haigatu/DanPotatoShader/tree/atm10-iris) · [Validation and limitations](https://github.com/Haigatu/DanPotatoShader/releases/tag/v0.2.13-atm10-preview). Prepared against ATM 10 8.2 with Iris 1.8.14-beta.1 and Sodium 0.8.13. Adds modded leaf tags and preserves native clouds outside the Overworld. Direct OpenGL compilation and cloud pixel checks passed; ATM 10 gameplay and special mod renderers have not yet been tested. Keep the pack's NeoForge mods and add only the shader ZIP.
+
 A shader pack for **Minecraft Java 1.21.1, Fabric, and Iris**, designed for Intel UHD integrated graphics. At a riverbank, the low sun lights the edges of stone and foliage, nearby trees cast shadows, and ripples break up the reflected sky. Both profiles include these effects.
 
 **0.2.11 UHD preview.** End crystal cores and healing beams brighten above a violet mist between the islands. Exposed stone darkens in rain and dries gradually; thin moving foam follows shallow shorelines. All four effects have separate switches.
